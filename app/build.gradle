@@ -27,5 +27,5 @@ dependencies {
     //network request
     compile 'com.squareup.okhttp:okhttp:2.5.0'
     //description json
-    compile 'com.google.code.gson:gson:2.3.1'
+    compile 'com.google.code.gson:gson:2.4'
 }
