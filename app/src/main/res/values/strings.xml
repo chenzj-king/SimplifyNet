@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">SimplifyNet</string>
+    <string name="edit_cityname_tips">请输入你要查询的城市的名称</string>
+    <string name="search_button_text">搜索</string>
+    <string name="search_weather_tips">查询天气中...</string>
+    <string name="before_search_weather_tips">天气为:</string>
+    <string name="input_error_tips">输入的城市名称无效</string>
+</resources>
