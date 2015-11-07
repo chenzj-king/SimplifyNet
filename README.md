@@ -13,3 +13,10 @@ Link:[https://github.com/square/okhttp](https://github.com/square/okhttp)
 1. Gson  
 Link:[https://github.com/google/gson](https://github.com/google/gson)
 
+# 关于我 #
+
+- **QQ:** 364972027
+- **Weibo:** [http://weibo.com/u/1829515680](http://weibo.com/u/1829515680)
+- **Email:** admin#chenzhongjin.cn | chenzhongjin#vip.qq.com
+- **Github:** [https://github.com/chenzj-king](https://github.com/chenzj-king)
+- **Blog:** [http://www.chenzhongjin.cn](http://www.chenzhongjin.cn)
