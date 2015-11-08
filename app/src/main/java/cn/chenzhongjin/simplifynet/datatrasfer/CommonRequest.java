@@ -241,13 +241,14 @@ public class CommonRequest {
         Request request = null;
 
         try {
-            //didn't need sign
+            //根据map拼装request
             request = BaseBuilder.urlGet(HttpURL.BASE_WEATHER_URL, CommonParams(params)).build();
         } catch (DreamLinerException var6) {
             callback.onError(var6.getErrorCode(), var6.getErrorMessage());
             return;
         }
 
+        //执行访问
         OtpBaseCall.doAsync(request, new IHttpCallBack() {
             public void onResponse(Response response) {
                 BaseResponse basicResponse = new BaseResponse(response);
