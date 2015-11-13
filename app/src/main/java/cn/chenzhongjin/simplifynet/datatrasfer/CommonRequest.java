@@ -265,7 +265,7 @@ public class CommonRequest {
             }
 
             public void onFailure(int errorCode, String errorMessage) {
-                callback.onError(errorCode, errorMessage);
+                CommonRequest.delivery.postError(1, "获取天气失败,请检查你输入的城市是否正确", callback);
             }
         });
     }
