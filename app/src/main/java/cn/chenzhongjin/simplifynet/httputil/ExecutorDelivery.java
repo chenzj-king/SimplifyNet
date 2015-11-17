@@ -59,7 +59,7 @@ public class ExecutorDelivery {
         private T t;
         private int postCode;
 
-        public ResponseDeliveryRunnable(int code, int postCode, String message, T t, IDataCallBack<T> callback) {
+        public ResponseDeliveryRunnable(int postCode, int code, String message, T t, IDataCallBack<T> callback) {
             this.code = code;
             this.postCode = postCode;
             this.message = message;
