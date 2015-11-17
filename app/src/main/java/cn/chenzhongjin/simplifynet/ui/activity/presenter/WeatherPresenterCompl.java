@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cn.chenzhongjin.simplifynet.R;
-import cn.chenzhongjin.simplifynet.datatrasfer.CommonRequest;
+import cn.chenzhongjin.simplifynet.datatrasfer.NetRequest;
 import cn.chenzhongjin.simplifynet.datatrasfer.IDataCallBack;
 import cn.chenzhongjin.simplifynet.entity.Weather;
 import cn.chenzhongjin.simplifynet.ui.activity.view.IWeatherView;
@@ -61,7 +61,7 @@ public class WeatherPresenterCompl implements IWeatherPresenter {
         if (null != cityName && cityName.length() > 0) {
             Map<String, String> map = new HashMap<String, String>();
             map.put("cityname", cityName);
-            CommonRequest.getWeatherMsg(map, new IDataCallBack<Weather>() {
+            NetRequest.getWeatherMsg(map, new IDataCallBack<Weather>() {
                 @Override
                 public void onSuccess(Weather weather) {
                     iWeatherView.onSearchWeatherResult(weather);

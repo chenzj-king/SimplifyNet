@@ -22,44 +22,44 @@ import com.google.gson.annotations.SerializedName;
 
 /**
  * @author chenzj
- * @Title: DataErrorCategory
+ * @Title: DataErrorMes
  * @Description: 后台如果有协定好请求失败的话.可以定制
  * @date 2015/11/7
  * @email admin@chenzhongjin.cn
  */
-public class DataErrorCategory {
-    @SerializedName("error_no")
+public class DataErrorMes {
+    @SerializedName("errorNo")
     private int mErrorNo;
-    @SerializedName("error_code")
+    @SerializedName("errorCode")
     private String mErrorCode;
-    @SerializedName("error_desc")
-    private String mErrorDesc;
+    @SerializedName("errorMes")
+    private String mErrorMes;
 
-    public DataErrorCategory() {
+    public DataErrorMes() {
     }
 
-    public int getErrorNo() {
-        return this.mErrorNo;
+    public int getmErrorNo() {
+        return mErrorNo;
     }
 
-    public void setErrorNo(int mErrorNo) {
+    public void setmErrorNo(int mErrorNo) {
         this.mErrorNo = mErrorNo;
     }
 
-    public String getErrorCode() {
-        return this.mErrorCode;
+    public String getmErrorCode() {
+        return mErrorCode;
     }
 
-    public void setErrorCode(String mErrorCode) {
+    public void setmErrorCode(String mErrorCode) {
         this.mErrorCode = mErrorCode;
     }
 
-    public String getErrorDesc() {
-        return this.mErrorDesc;
+    public String getmErrorMes() {
+        return mErrorMes;
     }
 
-    public void setErrorDesc(String mErrorDesc) {
-        this.mErrorDesc = mErrorDesc;
+    public void setmErrorMes(String mErrorMes) {
+        this.mErrorMes = mErrorMes;
     }
 }
 

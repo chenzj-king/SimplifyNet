@@ -112,11 +112,11 @@ public class NetworkType {
         }
 
         public static String getName(int index) {
-            NetworkType.NetWorkType[] var4;
-            int var3 = (var4 = values()).length;
+            NetworkType.NetWorkType[] netWorkTypes;
+            int length = (netWorkTypes = values()).length;
 
-            for (int var2 = 0; var2 < var3; ++var2) {
-                NetworkType.NetWorkType c = var4[var2];
+            for (int i = 0; i < length; ++i) {
+                NetworkType.NetWorkType c = netWorkTypes[i];
                 if (c.getIndex() == index) {
                     return c.name;
                 }

@@ -49,15 +49,15 @@ import cn.chenzhongjin.simplifynet.util.NetworkType;
 
 /**
  * @author chenzj
- * @Title: CommonRequest
+ * @Title: NetRequest
  * @Description: 访问请求类.拼装url并且访问成功之后返回结果.各种层次的错误都回调返回对应的状态码和错误信息
  * @date 2015/11/7
  * @email admin@chenzhongjin.cn
  */
-public class CommonRequest {
+public class NetRequest {
     private static Context mContext = null;
     public static final String TAG = "DreamLiner";
-    private static CommonRequest singleton;
+    private static NetRequest singleton;
     private int mPagesize = 20;
     private String mAppkey = "";
     private String mAppid = "";
@@ -76,15 +76,15 @@ public class CommonRequest {
 
     private String appsecret = "";
 
-    private CommonRequest() {
+    private NetRequest() {
     }
 
-    public static CommonRequest getInstanse() {
+    public static NetRequest getInstanse() {
         if (singleton == null) {
-            Class var0 = CommonRequest.class;
-            synchronized (CommonRequest.class) {
+            Class commonRequestClass = NetRequest.class;
+            synchronized (NetRequest.class) {
                 if (singleton == null) {
-                    singleton = new CommonRequest();
+                    singleton = new NetRequest();
                 }
             }
         }
@@ -102,7 +102,7 @@ public class CommonRequest {
 
     private Context getAplication() throws DreamLinerException {
         if (mContext == null) {
-            throw new DreamLinerException(600, "you must call #CommonRequest.init");
+            throw new DreamLinerException(600, "you must call #NetRequest.init");
         } else {
             return mContext.getApplicationContext();
         }
@@ -115,7 +115,7 @@ public class CommonRequest {
             try {
                 appInfo = this.getAplication().getPackageManager().getApplicationInfo(this.getAplication().getPackageName(), 128);
                 this.mAppkey = appInfo.metaData.getString("app_key");
-            } catch (Exception var3) {
+            } catch (Exception exception) {
                 throw new DreamLinerException(600, "get appkey error");
             }
         }
@@ -156,7 +156,7 @@ public class CommonRequest {
             try {
                 appInfo = this.getAplication().getPackageManager().getApplicationInfo(this.getAplication().getPackageName(), 128);
                 this.mAppid = appInfo.metaData.getString("pack_id");
-            } catch (PackageManager.NameNotFoundException var3) {
+            } catch (PackageManager.NameNotFoundException exception) {
                 throw new DreamLinerException(600, "get packid error");
             }
         }
@@ -243,8 +243,8 @@ public class CommonRequest {
         try {
             //根据map拼装request
             request = BaseBuilder.urlGet(HttpURL.BASE_WEATHER_URL, CommonParams(params)).build();
-        } catch (DreamLinerException var6) {
-            callback.onError(var6.getErrorCode(), var6.getErrorMessage());
+        } catch (DreamLinerException dreamLinerException) {
+            callback.onError(dreamLinerException.getErrorCode(), dreamLinerException.getErrorMessage());
             return;
         }
 
@@ -258,25 +258,25 @@ public class CommonRequest {
                 //具体根据后台的定义来回调执行onSuccess/onFailure
                 try {
                     Weather weather = (Weather) basicResponse.getResponseBodyStringToObject(listType);
-                    CommonRequest.delivery.postSuccess(callback, weather);
-                } catch (Exception var5) {
-                    CommonRequest.delivery.postError(1, "获取天气失败,请检查你输入的城市是否正确", callback);
+                    NetRequest.delivery.postSuccess(callback, weather);
+                } catch (Exception exception) {
+                    NetRequest.delivery.postError(1, "解释天气出现异常", callback);
                 }
             }
 
-            public void onFailure(int errorCode, String errorMessage) {
-                CommonRequest.delivery.postError(1, "获取天气失败,请检查你输入的城市是否正确", callback);
+            public void onFailure(int errorCode, String errorMes) {
+                NetRequest.delivery.postError(1, errorMes, callback);
             }
         });
     }
 
-    public DataErrorCategory parseResponseHandler(BaseResponse basicResponse) {
+    public DataErrorMes parseResponseHandler(BaseResponse basicResponse) {
         Gson gson = new Gson();
 
         try {
-            DataErrorCategory e = (DataErrorCategory) gson.fromJson(basicResponse.getResponseBodyToString(), DataErrorCategory.class);
+            DataErrorMes e = (DataErrorMes) gson.fromJson(basicResponse.getResponseBodyToString(), DataErrorMes.class);
             return e;
-        } catch (Exception var4) {
+        } catch (Exception exception) {
             return null;
         }
     }

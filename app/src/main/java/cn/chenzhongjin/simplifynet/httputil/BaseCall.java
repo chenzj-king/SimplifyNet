@@ -82,7 +82,6 @@ public class BaseCall {
                 } else {
                     callback.onFailure(604, e.getMessage());
                 }
-
             }
         });
     }

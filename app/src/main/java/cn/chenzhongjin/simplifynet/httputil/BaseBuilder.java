@@ -91,10 +91,10 @@ public class BaseBuilder {
         FormEncodingBuilder formEncodingBuilder = null;
         if (specificParams != null && specificParams.size() > 0) {
             formEncodingBuilder = new FormEncodingBuilder();
-            Iterator var4 = specificParams.entrySet().iterator();
+            Iterator entryIterator = specificParams.entrySet().iterator();
 
-            while (var4.hasNext()) {
-                Map.Entry entry = (Map.Entry) var4.next();
+            while (entryIterator.hasNext()) {
+                Map.Entry entry = (Map.Entry) entryIterator.next();
                 formEncodingBuilder.add((String) entry.getKey(), (String) entry.getValue());
             }
 

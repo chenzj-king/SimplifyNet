@@ -26,7 +26,7 @@ package cn.chenzhongjin.simplifynet.datatrasfer;
  * @email admin@chenzhongjin.cn
  */
 public interface IDataCallBack<T extends DreamLinerResponse> {
-    void onSuccess(T var1);
+    void onSuccess(T bean);
 
-    void onError(int var1, String var2);
+    void onError(int errorCode, String errorMes);
 }

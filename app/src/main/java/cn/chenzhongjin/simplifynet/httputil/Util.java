@@ -48,10 +48,10 @@ public class Util {
 
     public static String ConvertMap2HttpParams(Map<String, String> map) {
         StringBuffer buffer = new StringBuffer();
-        Iterator var3 = map.entrySet().iterator();
+        Iterator entryIterator = map.entrySet().iterator();
 
-        while (var3.hasNext()) {
-            Map.Entry entry = (Map.Entry) var3.next();
+        while (entryIterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) entryIterator.next();
             buffer.append((String) entry.getKey()).append("=").append((String) entry.getValue()).append("&");
         }
 
@@ -60,18 +60,18 @@ public class Util {
     }
 
     public static Map<String, String> encoderName(Map<String, String> map) {
-        Iterator var2 = map.entrySet().iterator();
+        Iterator entryIterator = map.entrySet().iterator();
 
-        while (var2.hasNext()) {
-            Map.Entry entry = (Map.Entry) var2.next();
+        while (entryIterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) entryIterator.next();
             String key = (String) entry.getKey();
             if (key.equals("q") || key.equals("tag_name")) {
                 String value = null;
 
                 try {
                     value = URLEncoder.encode((String) entry.getValue(), "UTF-8");
-                } catch (UnsupportedEncodingException var6) {
-                    var6.printStackTrace();
+                } catch (UnsupportedEncodingException unsupporteEncodingExecption) {
+                    unsupporteEncodingExecption.printStackTrace();
                 }
 
                 map.put(key, value);
@@ -101,10 +101,10 @@ public class Util {
 
     public static Map<String, String> cType(Map<String, Object> map) {
         HashMap param = new HashMap();
-        Iterator var3 = map.entrySet().iterator();
+        Iterator entryIterator = map.entrySet().iterator();
 
-        while (var3.hasNext()) {
-            Map.Entry entry = (Map.Entry) var3.next();
+        while (entryIterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) entryIterator.next();
             param.put((String) entry.getKey(), String.valueOf(entry.getValue()));
         }
 

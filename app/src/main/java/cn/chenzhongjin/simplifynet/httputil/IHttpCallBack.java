@@ -28,8 +28,8 @@ import com.squareup.okhttp.Response;
  * @email admin@chenzhongjin.cn
  */
 public interface IHttpCallBack {
-    void onFailure(int var1, String var2);
+    void onFailure(int errorCode, String errorMes);
 
-    void onResponse(Response var1);
+    void onResponse(Response response);
 }
 
