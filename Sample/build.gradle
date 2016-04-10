@@ -22,6 +22,7 @@ android {
 dependencies {
     compile project(':simplifyokhttp')
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile libraries.junit
     compile libraries.supportAppCompat
     //ButterKnife
     compile libraries.butterknife
