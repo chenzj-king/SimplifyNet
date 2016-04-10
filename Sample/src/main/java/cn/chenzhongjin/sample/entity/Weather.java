@@ -20,8 +20,6 @@ package cn.chenzhongjin.sample.entity;
 
 import java.io.Serializable;
 
-import cn.chenzhongjin.sample.lib.datatrasfer.DreamLinerResponse;
-
 
 /**
  * @author chenzj
@@ -30,7 +28,7 @@ import cn.chenzhongjin.sample.lib.datatrasfer.DreamLinerResponse;
  * @date 2015/11/7
  * @email admin@chenzhongjin.cn
  */
-public class Weather extends DreamLinerResponse implements Serializable {
+public class Weather implements Serializable {
 
     /**
      * errNum : 0

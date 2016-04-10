@@ -5,4 +5,7 @@
     <string name="search_weather_tips">查询天气中...</string>
     <string name="before_search_weather_tips">天气为:</string>
     <string name="input_error_tips">输入的城市名称无效</string>
+
+
+    <string name="network_disable_tips">网络连接失败，请开启您的网络连接，并重试！</string>
 </resources>

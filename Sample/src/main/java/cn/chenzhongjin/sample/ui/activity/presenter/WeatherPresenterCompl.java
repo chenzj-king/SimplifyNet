@@ -22,13 +22,15 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.dreamliner.simplifyokhttp.callback.DataCallBack;
+import com.orhanobut.logger.Logger;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import cn.chenzhongjin.sample.R;
 import cn.chenzhongjin.sample.entity.Weather;
-import cn.chenzhongjin.sample.lib.datatrasfer.IDataCallBack;
-import cn.chenzhongjin.sample.lib.util.LogUtil;
 import cn.chenzhongjin.sample.net.NetRequest;
 import cn.chenzhongjin.sample.ui.activity.view.IWeatherView;
 
@@ -40,6 +42,8 @@ import cn.chenzhongjin.sample.ui.activity.view.IWeatherView;
  * @email admin@chenzhongjin.cn
  */
 public class WeatherPresenterCompl implements IWeatherPresenter {
+
+    private UUID mUUID = UUID.randomUUID();
 
     Weather weather;
     IWeatherView iWeatherView;
@@ -61,7 +65,7 @@ public class WeatherPresenterCompl implements IWeatherPresenter {
         if (null != cityName && cityName.length() > 0) {
             Map<String, String> map = new HashMap<String, String>();
             map.put("cityname", cityName);
-            NetRequest.getWeatherMsg(map, new IDataCallBack<Weather>() {
+            NetRequest.getWeatherMsg(map, mUUID, new DataCallBack<Weather>() {
                 @Override
                 public void onSuccess(Weather weather) {
                     iWeatherView.onSearchWeatherResult(weather);
@@ -69,7 +73,7 @@ public class WeatherPresenterCompl implements IWeatherPresenter {
 
                 @Override
                 public void onError(int code, String errorMsg) {
-                    LogUtil.i("SearchWeather error mes>" + errorMsg);
+                    Logger.i("SearchWeather error mes>" + errorMsg);
                     iWeatherView.onSearchWeatherError(code, errorMsg);
                 }
             });

@@ -23,31 +23,29 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Handler;
-import android.os.Looper;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
-import com.google.gson.Gson;
+import com.dreamliner.simplifyokhttp.OkHttpUtils;
+import com.dreamliner.simplifyokhttp.callback.BaseResponse;
+import com.dreamliner.simplifyokhttp.callback.DataCallBack;
+import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
+import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
+import com.dreamliner.simplifyokhttp.utils.ErrorCode;
+import com.dreamliner.simplifyokhttp.utils.GsonUtil;
 import com.google.gson.reflect.TypeToken;
-import com.squareup.okhttp.Request;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
+import cn.chenzhongjin.sample.AppContext;
 import cn.chenzhongjin.sample.entity.Weather;
-import cn.chenzhongjin.sample.lib.datatrasfer.DataErrorMes;
-import cn.chenzhongjin.sample.lib.datatrasfer.IDataCallBack;
-import cn.chenzhongjin.sample.lib.datatrasfer.OtpBaseCall;
-import cn.chenzhongjin.sample.lib.httputil.BaseBuilder;
-import cn.chenzhongjin.sample.lib.httputil.BaseResponse;
-import cn.chenzhongjin.sample.lib.httputil.DreamLinerException;
-import cn.chenzhongjin.sample.lib.httputil.ExecutorDelivery;
-import cn.chenzhongjin.sample.lib.httputil.HttpURL;
-import cn.chenzhongjin.sample.lib.httputil.IHttpCallBack;
-import cn.chenzhongjin.sample.lib.util.NetworkType;
+import cn.chenzhongjin.sample.net.utils.NetUtils;
+import cn.chenzhongjin.sample.net.utils.NetworkType;
+import okhttp3.Call;
+import okhttp3.Response;
 
 /**
  * @author chenzj
@@ -69,12 +67,6 @@ public class NetRequest {
     private String mSimName = "";
     private String mNetWorkType = "";
     private String mDisplay = "";
-    public static Handler mHandler = new Handler(Looper.getMainLooper());
-    private static ExecutorDelivery delivery;
-
-    static {
-        delivery = new ExecutorDelivery(mHandler);
-    }
 
     private String appsecret = "";
 
@@ -83,23 +75,19 @@ public class NetRequest {
 
     public static NetRequest getInstanse() {
         if (singleton == null) {
-            Class commonRequestClass = NetRequest.class;
+            Class<NetRequest> commonRequestClass = NetRequest.class;
             synchronized (NetRequest.class) {
                 if (singleton == null) {
                     singleton = new NetRequest();
+                    singleton.init(AppContext.getInstance());
                 }
             }
         }
-
         return singleton;
     }
 
     public void init(Context context) {
         mContext = context.getApplicationContext();
-    }
-
-    public static Handler getHandler() {
-        return mHandler;
     }
 
     private Context getAplication() throws DreamLinerException {
@@ -115,7 +103,8 @@ public class NetRequest {
             ApplicationInfo appInfo = null;
 
             try {
-                appInfo = this.getAplication().getPackageManager().getApplicationInfo(this.getAplication().getPackageName(), 128);
+                appInfo = AppContext.getInstance().getPackageManager().getApplicationInfo(AppContext.getInstance().getPackageName(),
+                        128);
                 this.mAppkey = appInfo.metaData.getString("app_key");
             } catch (Exception exception) {
                 throw new DreamLinerException(600, "get appkey error");
@@ -213,8 +202,23 @@ public class NetRequest {
         return 2;
     }
 
+    public void setPageSize(Map<String, String> params) {
+        if (!params.containsKey("count")) {
+            params.put("count", String.valueOf(this.getDefaultPagesize()));
+        }
+    }
+
+    // TODO: 2015/10/25 get APpsecret.
+    public String getAppsecret() {
+        return appsecret;
+    }
+
+    public void destroy() {
+        singleton = null;
+    }
+
     public Map<String, String> assembleCommonParams() throws DreamLinerException {
-        HashMap map = new HashMap();
+        HashMap<String, String> map = new HashMap<String, String>();
         //添加服务器可能需要统计/校验的参数
         /*
         map.put("app_key", getInstanse().getAppKey());
@@ -226,72 +230,79 @@ public class NetRequest {
         return map;
     }
 
-    public void destroy() {
-        singleton = null;
-    }
-
-    public static Map<String, String> CommonParams(Map<String, String> specificParams) throws DreamLinerException {
-        HashMap params = new HashMap();
+    public static Map<String, String> addCommonParams(Map<String, String> specificParams) throws DreamLinerException {
+        HashMap<String, String> params = new HashMap<>();
         params.putAll(getInstanse().assembleCommonParams());
         params.putAll(specificParams);
         return params;
     }
 
-    public static void getWeatherMsg(Map<String, String> specificParams, final IDataCallBack<Weather> callback) {
-        HashMap params = new HashMap();
-        params.putAll(specificParams);
-        Request request = null;
+    public static <T> boolean checkNetStatus(DataCallBack<T> callback) {
+        if (!NetUtils.isNetworkAvailable(AppContext.getInstance())) {
+            OkHttpUtils.getInstance().postErro(ErrorCode.NET_DISABLE, "请检查你的网络状态!", callback);
+            return false;
+        }
+        return true;
+    }
 
+    public static <T> Map<String, String> addCommonParams(Map<String, String> specificParams, DataCallBack<T> callback) {
+
+        Map<String, String> finalparams;
         try {
-            //根据map拼装request
-            request = BaseBuilder.urlGet(HttpURL.BASE_WEATHER_URL, CommonParams(params)).build();
-        } catch (DreamLinerException dreamLinerException) {
-            callback.onError(dreamLinerException.getErrorCode(), dreamLinerException.getErrorMessage());
+            finalparams = addCommonParams(specificParams);
+        } catch (DreamLinerException e) {
+            callback.onError(e.getErrorCode(), e.getErrorMessage());
+            return null;
+        }
+        return finalparams;
+    }
+
+    public static void getWeatherMsg(Map<String, String> specificParams, Object object, final DataCallBack<Weather> callback) {
+
+        //这里进行网络状态判断.無网络直接回调onError.return该请求
+        if (!checkNetStatus(callback)) {
+            return;
+        }
+        //这里可以进行是否登录的校验.如果没有Token就回调onEror.并且return该请求(类似登录接口/查询无需登录权限的业务就无需调用该方法)
+        Map<String, String> finalparams = addCommonParams(specificParams, callback);
+        if (null == finalparams) {
             return;
         }
 
-        //执行访问
-        OtpBaseCall.doAsync(request, new IHttpCallBack() {
-            public void onResponse(BaseResponse baseResponse) {
-                Type listType = (new TypeToken<Weather>() {
-                }).getType();
-
-                //具体根据后台的定义来回调执行onSuccess/onFailure
-                try {
-                    Weather weather = (Weather) baseResponse.getResponseBodyStringToObject(listType);
-                    NetRequest.delivery.postSuccess(callback, weather);
-                } catch (Exception exception) {
-                    NetRequest.delivery.postError(1, "解释天气出现异常", callback);
-                }
-            }
-
-            public void onFailure(int errorCode, String errorMes) {
-                NetRequest.delivery.postError(1, errorMes, callback);
-            }
-        });
-    }
-
-    public DataErrorMes parseResponseHandler(BaseResponse basicResponse) {
-        Gson gson = new Gson();
-
         try {
-            DataErrorMes e = (DataErrorMes) gson.fromJson(basicResponse.getResponseBodyToString(), DataErrorMes.class);
-            return e;
-        } catch (Exception exception) {
-            return null;
+            OkHttpUtils.get().url(HttpUrl.BASE_WEATHER_URL).addHeader("apikey", "15f0d14ed33720b6b73ec8a3f7bb4d46")
+                    .params(finalparams).tag(object).build().execute(new HttpCallBack() {
+
+                @Override
+                public void onError(int errorCode, String errorMes, Call call, Exception e) {
+                    callback.onError(errorCode, errorMes);
+                }
+
+                @Override
+                public void onResponse(Object response) {
+                    callback.onSuccess((Weather) response);
+                }
+
+                @Override
+                public Object parseNetworkResponse(Response response) throws Exception {
+
+                    BaseResponse baseResponse = new BaseResponse(response);
+                    //可以保存报文到本地出问题的时候方便调试
+                    Type type = (new TypeToken<Weather>() {
+                    }).getType();
+                    Weather weather = (Weather) GsonUtil.fromJsonToObj(baseResponse.getResponseBodyToString(), type);
+
+                    if (null == weather) {
+                        throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, "解释天气数据失败");
+                    }
+                    return weather;
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+            OkHttpUtils.getInstance().postErro(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);
         }
     }
 
-    public void setPageSize(Map<String, String> params) {
-        if (!params.containsKey("count")) {
-            params.put("count", String.valueOf(this.getDefaultPagesize()));
-        }
-
-    }
-
-    // TODO: 2015/10/25 get APpsecret.
-    public String getAppsecret() {
-        return appsecret;
-    }
 }
 

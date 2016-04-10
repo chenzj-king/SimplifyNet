@@ -1,16 +1,16 @@
-apply plugin: 'com.android.application'
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion versions.compileSdk
     buildToolsVersion versions.buildTools
 
     defaultConfig {
-        applicationId "cn.chenzhongjin.simplifynet"
         minSdkVersion versions.minSdk
         targetSdkVersion versions.targetSdk
         versionCode versions.code
         versionName versions.name
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -20,11 +20,8 @@ android {
 }
 
 dependencies {
-    compile project(':simplifyokhttp')
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile libraries.supportAppCompat
-    //ButterKnife
-    compile libraries.butterknife
-    //logger
-    compile libraries.logger
+    compile fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    testCompile libraries.junit
+    compile libraries.okhttp3
+    compile libraries.gson
 }
