@@ -45,7 +45,6 @@ import cn.chenzhongjin.sample.entity.Weather;
 import cn.chenzhongjin.sample.net.utils.NetUtils;
 import cn.chenzhongjin.sample.net.utils.NetworkType;
 import okhttp3.Call;
-import okhttp3.Response;
 
 /**
  * @author chenzj
@@ -284,9 +283,8 @@ public class NetRequest {
                 }
 
                 @Override
-                public Object parseNetworkResponse(Response response) throws Exception {
+                public Object parseNetworkResponse(BaseResponse baseResponse) throws Exception {
 
-                    BaseResponse baseResponse = new BaseResponse(response);
                     //可以保存报文到本地出问题的时候方便调试
                     Type type = (new TypeToken<Weather>() {
                     }).getType();

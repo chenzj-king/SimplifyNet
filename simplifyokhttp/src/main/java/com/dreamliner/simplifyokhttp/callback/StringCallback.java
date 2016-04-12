@@ -2,8 +2,6 @@ package com.dreamliner.simplifyokhttp.callback;
 
 import java.io.IOException;
 
-import okhttp3.Response;
-
 /**
  * @author chenzj
  * @Title: StringCallback
@@ -14,8 +12,8 @@ import okhttp3.Response;
 public abstract class StringCallback extends HttpCallBack<String> {
 
     @Override
-    public String parseNetworkResponse(Response response) throws IOException {
-        return response.body().string();
+    public String parseNetworkResponse(BaseResponse baseResponse) throws IOException {
+        return baseResponse.getResponse().body().string();
     }
 
 }

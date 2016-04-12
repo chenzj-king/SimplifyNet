@@ -22,7 +22,7 @@ public abstract class HttpCallBack<T> {
      *
      * @param response
      */
-    public abstract T parseNetworkResponse(Response response) throws Exception;
+    public abstract T parseNetworkResponse(BaseResponse baseResponse) throws Exception;
 
     /**
      * UI Thread
@@ -51,7 +51,7 @@ public abstract class HttpCallBack<T> {
     public static HttpCallBack HttpCallBackDefault = new HttpCallBack() {
 
         @Override
-        public Object parseNetworkResponse(Response response) throws Exception {
+        public Object parseNetworkResponse(BaseResponse baseResponse) throws Exception {
             return null;
         }
 

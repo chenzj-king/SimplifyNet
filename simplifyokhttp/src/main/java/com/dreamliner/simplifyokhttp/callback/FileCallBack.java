@@ -36,8 +36,8 @@ public abstract class FileCallBack extends HttpCallBack<File> {
 
 
     @Override
-    public File parseNetworkResponse(Response response) throws Exception {
-        return saveFile(response);
+    public File parseNetworkResponse(BaseResponse baseResponse) throws Exception {
+        return saveFile(baseResponse.getResponse());
     }
 
 

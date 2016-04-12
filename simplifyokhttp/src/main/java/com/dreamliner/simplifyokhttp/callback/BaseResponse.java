@@ -28,6 +28,10 @@ public class BaseResponse {
         this.mResponse = response;
     }
 
+    public Response getResponse() {
+        return mResponse;
+    }
+
     public int getStatusCode() {
         return this.mResponse.code();
     }

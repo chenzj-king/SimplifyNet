@@ -3,8 +3,6 @@ package com.dreamliner.simplifyokhttp.callback;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
-import okhttp3.Response;
-
 /**
  * @author chenzj
  * @Title: BitmapCallback
@@ -15,8 +13,8 @@ import okhttp3.Response;
 public abstract class BitmapCallback extends HttpCallBack<Bitmap> {
 
     @Override
-    public Bitmap parseNetworkResponse(Response response) throws Exception {
-        return BitmapFactory.decodeStream(response.body().byteStream());
+    public Bitmap parseNetworkResponse(BaseResponse baseResponse) throws Exception {
+        return BitmapFactory.decodeStream(baseResponse.getResponse().body().byteStream());
     }
 
 }

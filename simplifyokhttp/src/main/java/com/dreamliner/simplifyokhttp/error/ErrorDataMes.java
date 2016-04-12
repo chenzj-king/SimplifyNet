@@ -11,9 +11,9 @@ import com.google.gson.annotations.SerializedName;
  */
 public class ErrorDataMes {
 
-    @SerializedName("err")
-    private int err = -1;
-    @SerializedName("msg")
+    @SerializedName("errNum")
+    private int err;
+    @SerializedName("errMsg")
     private String msg;
 
     public void setErr(int err) {
