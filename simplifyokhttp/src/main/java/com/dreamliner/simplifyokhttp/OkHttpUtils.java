@@ -9,6 +9,8 @@ import com.dreamliner.simplifyokhttp.builder.HeadBuilder;
 import com.dreamliner.simplifyokhttp.builder.OtherRequestBuilder;
 import com.dreamliner.simplifyokhttp.builder.PostFileBuilder;
 import com.dreamliner.simplifyokhttp.builder.PostFormBuilder;
+import com.dreamliner.simplifyokhttp.builder.PostJsonBuilder;
+import com.dreamliner.simplifyokhttp.builder.PostJsonZipBuilder;
 import com.dreamliner.simplifyokhttp.builder.PostStringBuilder;
 import com.dreamliner.simplifyokhttp.callback.BaseResponse;
 import com.dreamliner.simplifyokhttp.callback.DataCallBack;
@@ -30,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.HostnameVerifier;
@@ -149,6 +153,19 @@ public class OkHttpUtils {
         return mOkHttpClient;
     }
 
+    public static Map<String, String> getGzipGetHeaders() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Encoding", "gzip");
+        headers.put("Accept-Encoding", "gzip,deflate");
+        return headers;
+    }
+
+    public static Map<String, String> getGzipPostHeaders() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Encoding", "gzip");
+        return headers;
+    }
+
     public static GetBuilder get() {
         return new GetBuilder();
     }
@@ -163,6 +180,14 @@ public class OkHttpUtils {
 
     public static PostFormBuilder post() {
         return new PostFormBuilder();
+    }
+
+    public static PostJsonBuilder postJson() {
+        return new PostJsonBuilder();
+    }
+
+    public static PostJsonZipBuilder postJsonZip() {
+        return new PostJsonZipBuilder();
     }
 
     public static OtherRequestBuilder put() {

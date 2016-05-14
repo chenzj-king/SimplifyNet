@@ -26,6 +26,16 @@ public class GsonUtil {
         return null;
     }
 
+    public static Object fromJsonToObj(Reader reader, Type type) {
+        Object object = null;
+        try {
+            return gson.fromJson(reader, type);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
     public static <T> T fromJson(Reader json, Class<T> clazz) {
         try {
             return gson.fromJson(json, clazz);

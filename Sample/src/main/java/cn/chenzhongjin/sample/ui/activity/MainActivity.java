@@ -24,7 +24,7 @@ import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatTextView;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cn.chenzhongjin.sample.R;
@@ -34,11 +34,11 @@ import cn.chenzhongjin.sample.ui.activity.view.IWeatherView;
 
 public class MainActivity extends AppCompatActivity implements IWeatherView {
 
-    @Bind(R.id.cityname_editText)
+    @BindView(R.id.cityname_editText)
     AppCompatEditText cityNameEditText;
-    @Bind(R.id.search_weather_button)
+    @BindView(R.id.search_weather_button)
     AppCompatButton searchButton;
-    @Bind(R.id.weather_mes_textView)
+    @BindView(R.id.weather_mes_textView)
     AppCompatTextView weatherMesTextView;
 
     WeatherPresenterCompl weatherPresenterCompl;

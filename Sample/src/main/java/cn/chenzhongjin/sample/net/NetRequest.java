@@ -33,7 +33,6 @@ import com.dreamliner.simplifyokhttp.callback.DataCallBack;
 import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
-import com.dreamliner.simplifyokhttp.utils.GsonUtil;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
@@ -103,7 +102,7 @@ public class NetRequest {
 
             try {
                 appInfo = AppContext.getInstance().getPackageManager().getApplicationInfo(AppContext.getInstance().getPackageName(),
-                        128);
+                        PackageManager.GET_META_DATA);
                 this.mAppkey = appInfo.metaData.getString("app_key");
             } catch (Exception exception) {
                 throw new DreamLinerException(600, "get appkey error");
@@ -144,7 +143,8 @@ public class NetRequest {
             ApplicationInfo appInfo = null;
 
             try {
-                appInfo = this.getAplication().getPackageManager().getApplicationInfo(this.getAplication().getPackageName(), 128);
+                appInfo = this.getAplication().getPackageManager().getApplicationInfo(this.getAplication().getPackageName(),
+                        PackageManager.GET_META_DATA);
                 this.mAppid = appInfo.metaData.getString("pack_id");
             } catch (PackageManager.NameNotFoundException exception) {
                 throw new DreamLinerException(600, "get packid error");
@@ -288,7 +288,7 @@ public class NetRequest {
                     //可以保存报文到本地出问题的时候方便调试
                     Type type = (new TypeToken<Weather>() {
                     }).getType();
-                    Weather weather = (Weather) GsonUtil.fromJsonToObj(baseResponse.getResponseBodyToString(), type);
+                    Weather weather = (Weather) baseResponse.getResponseBodyStringToObject(type);
 
                     if (null == weather) {
                         throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, "解释天气数据失败");

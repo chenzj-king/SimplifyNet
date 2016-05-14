@@ -3,11 +3,14 @@ package com.dreamliner.simplifyokhttp.callback;
 import android.text.TextUtils;
 
 import com.dreamliner.simplifyokhttp.utils.GsonUtil;
-import com.google.gson.Gson;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.Type;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 import okhttp3.Response;
 
@@ -45,8 +48,23 @@ public class BaseResponse {
     }
 
     public String getResponseBodyToString() throws IOException {
-        if (TextUtils.isEmpty(bodyString))
-            bodyString = this.mResponse.body().string();
+        if (TextUtils.isEmpty(bodyString)) {
+            if (mResponse.headers().names().contains("Content-Encoding")
+                    && mResponse.headers().get("Content-Encoding").equals("gzip")) {
+                InputStream in = new GZIPInputStream(mResponse.body().byteStream());
+                ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
+                int len;
+                byte[] buffer = new byte[1024];
+                while ((len = in.read(buffer)) != -1) {
+                    arrayOutputStream.write(buffer, 0, len);
+                }
+                in.close();
+                arrayOutputStream.close();
+                bodyString = new String(arrayOutputStream.toByteArray(), "utf-8");
+            } else {
+                bodyString = this.mResponse.body().string();
+            }
+        }
         return bodyString;
     }
 
@@ -54,19 +72,15 @@ public class BaseResponse {
         return this.mResponse.body().charStream();
     }
 
-    public <T> Object getResponseBodyStringToObject(T type) throws Exception {
+    public <T> Object getResponseBodyStringToObject(Type type) throws Exception {
         if (TextUtils.isEmpty(bodyString))
-            bodyString = this.mResponse.body().string();
-        Gson gson = new Gson();
-        return GsonUtil.fromJson(bodyString, (Class<T>) type);
-        //return gson.fromJson(bodyString, (Class<T>) type);
+            getResponseBodyToString();
+        return GsonUtil.fromJsonToObj(bodyString, type);
     }
 
-    public <T> Object getResponseBodyReaderToObject(T type) throws Exception {
+    public <T> Object getResponseBodyReaderToObject(Type type) throws Exception {
         Reader reader = this.mResponse.body().charStream();
-        Gson gson = new Gson();
-        return GsonUtil.fromJson(reader, (Class<T>) type);
-        //return gson.fromJson(reader, type);
+        return GsonUtil.fromJsonToObj(reader, type);
     }
 
     public void filterResponse() {
