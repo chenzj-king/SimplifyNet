@@ -22,6 +22,6 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     testCompile libraries.junit
-    compile libraries.okhttp3
+    compile libraries.okhttp
     compile libraries.gson
 }

@@ -1,7 +1,8 @@
 package com.dreamliner.simplifyokhttp.request;
 
 import com.dreamliner.simplifyokhttp.OkHttpUtils;
-import com.dreamliner.simplifyokhttp.builder.PostFormBuilder;
+import com.dreamliner.simplifyokhttp.builder.PostFormBuilder.FileInput;
+import com.dreamliner.simplifyokhttp.builder.PostFormBuilder.TextInput;
 import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
 
 import java.net.FileNameMap;
@@ -25,29 +26,34 @@ import okhttp3.RequestBody;
  */
 public class PostFormRequest extends OkHttpRequest {
 
-    private List<PostFormBuilder.FileInput> files;
+    private List<FileInput> files;
+    private List<TextInput> texts;
 
-    public PostFormRequest(String url, Object tag, Map<String, String> params, Map<String, String> headers, List<PostFormBuilder
-            .FileInput> files) {
+    public PostFormRequest(String url, Object tag, Map<String, String> params, Map<String, String> headers, List<FileInput> files,
+                           List<TextInput> texts) {
         super(url, tag, params, headers);
         this.files = files;
+        this.texts = texts;
     }
 
     @Override
     protected RequestBody buildRequestBody() {
-        if (files == null || files.isEmpty()) {
+        if ((files == null || files.isEmpty()) && (texts == null || texts.isEmpty())) {
             FormBody.Builder builder = new FormBody.Builder();
             addParams(builder);
             return builder.build();
         } else {
-            MultipartBody.Builder builder = new MultipartBody.Builder()
-                    .setType(MultipartBody.FORM);
+            MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
             addParams(builder);
 
             for (int i = 0; i < files.size(); i++) {
-                PostFormBuilder.FileInput fileInput = files.get(i);
+                FileInput fileInput = files.get(i);
                 RequestBody fileBody = RequestBody.create(MediaType.parse(guessMimeType(fileInput.filename)), fileInput.file);
                 builder.addFormDataPart(fileInput.key, fileInput.filename, fileBody);
+            }
+            for (int i = 0; i < texts.size(); i++) {
+                TextInput textInput = texts.get(i);
+                builder.addFormDataPart(textInput.key, textInput.text);
             }
             return builder.build();
         }

@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">SimplifyOkhttp</string>
+    <string name="netrequest_network_disable_tips">网络连接失败，请开启您的网络连接，并重试！</string>
+    <string name="netrequest_no_login">未登录</string>
+    <string name="netrequest_error_parms">参数错误</string>
 </resources>

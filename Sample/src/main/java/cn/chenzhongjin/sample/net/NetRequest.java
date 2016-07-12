@@ -238,7 +238,7 @@ public class NetRequest {
 
     public static <T> boolean checkNetStatus(DataCallBack<T> callback) {
         if (!NetUtils.isNetworkAvailable(AppContext.getInstance())) {
-            OkHttpUtils.getInstance().postErro(ErrorCode.NET_DISABLE, "请检查你的网络状态!", callback);
+            OkHttpUtils.getInstance().postError(ErrorCode.NET_DISABLE, "请检查你的网络状态!", callback);
             return false;
         }
         return true;
@@ -298,7 +298,7 @@ public class NetRequest {
             });
         } catch (Exception e) {
             e.printStackTrace();
-            OkHttpUtils.getInstance().postErro(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);
+            OkHttpUtils.getInstance().postError(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);
         }
     }
 

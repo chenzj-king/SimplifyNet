@@ -127,7 +127,7 @@ public class OkHttpUtils {
         return mDelivery;
     }
 
-    public <T> void postErro(int errorCode, String errorMes, DataCallBack<T> callBack) {
+    public <T> void postError(int errorCode, String errorMes, DataCallBack<T> callBack) {
         mDelivery.post(new ResponseDeliveryRunnable<T>(errorCode, errorMes, callBack));
     }
 
@@ -231,7 +231,7 @@ public class OkHttpUtils {
                 try {
                     BaseResponse baseResponse = new BaseResponse(response);
                     Object object = finalHttpCallBack.parseNetworkResponse(baseResponse);
-                    sendSuccessResultCallback(object, baseResponse, finalHttpCallBack);
+                    sendSuccessResultCallback(object, baseResponse, call, finalHttpCallBack);
                 } catch (Exception e) {
                     sendFailResultCallback(call, e, finalHttpCallBack);
                 }
@@ -263,7 +263,7 @@ public class OkHttpUtils {
                 if (exception instanceof IOException) {
                     if (exception instanceof SocketException) {
                         if (call.isCanceled()) {
-                            Log.i("EasyNet", "user finish Act/Fra cancel the request");
+                            Log.i("simplifyokhttp", "user finish Act/Fra cancel the request");
                         } else {
                             httpCallBack.onError(ErrorCode.SOCKET_EXCEPTION, "连接服务器失败，请重试！", call, exception);
                         }
@@ -285,7 +285,8 @@ public class OkHttpUtils {
         });
     }
 
-    public void sendSuccessResultCallback(final Object object, final BaseResponse baseResponse, final HttpCallBack httpCallBack) {
+    public void sendSuccessResultCallback(final Object object, final BaseResponse baseResponse, final Call call,
+                                          final HttpCallBack httpCallBack) {
         if (httpCallBack == null) return;
 
         final ErrorDataMes dataErrorMes = parseResponseHandler(baseResponse);
@@ -294,21 +295,29 @@ public class OkHttpUtils {
             @Override
             public void run() {
 
-                // TODO: 2016/4/10 应该根据自己服务器的错误定义来进行回调到onEror/onSuccess.
-                if (null != dataErrorMes) {
-                    if (dataErrorMes.getErr() == 0 && dataErrorMes.getMsg().equals("success")) {
-                        //服务器返回成功的状态码和信息
-                        httpCallBack.onResponse(object);
+                try {
+                    // TODO: 2016/4/10 应该根据自己服务器的错误定义来进行回调到onEror/onSuccess.
+                    if (null != dataErrorMes) {
+                        if (dataErrorMes.getErr() == 0 && dataErrorMes.getMsg().equals("success")) {
+                            //服务器返回成功的状态码和信息
+                            httpCallBack.onResponse(object);
+                        } else {
+                            //正常的服务器错误状态码
+                            httpCallBack.onError(ErrorCode.SERVER_CUSTOM_ERROR, dataErrorMes.getMsg(), call, null);
+                        }
                     } else {
-                        //正常的服务器错误状态码
-                        httpCallBack.onError(ErrorCode.SERVER_CUSTOM_ERROR, dataErrorMes.getMsg(), null, null);
+                        //回来的报文不是规范Json导致无法用Gson解释catch
+                        httpCallBack.onError(ErrorCode.EXCHANGE_DATA_ERROR, "解释数据错误", null, null);
                     }
-                } else {
-                    //回来的报文不是规范Json导致无法用Gson解释catch
-                    httpCallBack.onError(ErrorCode.EXCHANGE_DATA_ERROR, "解释数据错误", null, null);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //理论上以后都不会走这边.因为在上层parseNetworkResponse的时候.如果responseResult不是标准json.
+                    //则会抛出SqEx.然后会直接走sendOnError
+                    //这里也是为了防止在执行onResponse的时候操作不当导致crash
+                    httpCallBack.onError(ErrorCode.EXCHANGE_DATA_ERROR, e.getMessage(), call, e);
+                } finally {
+                    httpCallBack.onAfter();
                 }
-
-                httpCallBack.onAfter();
             }
         });
     }
