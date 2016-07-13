@@ -64,6 +64,5 @@ public class SerializableHttpCookie implements Serializable {
         builder = secure ? builder.secure() : builder;
         builder = httpOnly ? builder.httpOnly() : builder;
         clientCookie = builder.build();
-
     }
 }

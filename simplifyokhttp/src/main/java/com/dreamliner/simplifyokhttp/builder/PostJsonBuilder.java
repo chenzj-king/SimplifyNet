@@ -16,14 +16,14 @@ import okhttp3.MediaType;
  * @date 2016/3/19 18:45
  * @email admin@chenzhongjin.cn
  */
-public class PostJsonBuilder extends OkHttpRequestBuilder implements HasParamsable {
+public class PostJsonBuilder extends OkHttpRequestBuilder<PostJsonBuilder> implements HasParamsable {
 
     private String mJsonStr = "";
     private MediaType mediaType;
 
     @Override
     public RequestCall build() {
-        return new PostJsonRequest(url, tag, params, headers, mJsonStr, mediaType).build();
+        return new PostJsonRequest(url, tag, params, headers, mJsonStr, mediaType, id).build();
     }
 
     public PostJsonBuilder addMediaType(MediaType mediaType) {
@@ -33,18 +33,6 @@ public class PostJsonBuilder extends OkHttpRequestBuilder implements HasParamsab
 
     public PostJsonBuilder addJsonStr(String jsonStr) {
         this.mJsonStr = jsonStr;
-        return this;
-    }
-
-    @Override
-    public PostJsonBuilder url(String url) {
-        this.url = url;
-        return this;
-    }
-
-    @Override
-    public PostJsonBuilder tag(Object tag) {
-        this.tag = tag;
         return this;
     }
 
@@ -63,19 +51,4 @@ public class PostJsonBuilder extends OkHttpRequestBuilder implements HasParamsab
         return this;
     }
 
-    @Override
-    public PostJsonBuilder headers(Map<String, String> headers) {
-        this.headers = headers;
-        return this;
-    }
-
-
-    @Override
-    public PostJsonBuilder addHeader(String key, String val) {
-        if (this.headers == null) {
-            headers = new LinkedHashMap<>();
-        }
-        headers.put(key, val);
-        return this;
-    }
 }

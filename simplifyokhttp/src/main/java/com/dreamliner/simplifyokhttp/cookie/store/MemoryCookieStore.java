@@ -2,6 +2,7 @@ package com.dreamliner.simplifyokhttp.cookie.store;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -16,23 +17,28 @@ import okhttp3.HttpUrl;
  * @email admin@chenzhongjin.cn
  */
 public class MemoryCookieStore implements CookieStore {
-
     private final HashMap<String, List<Cookie>> allCookies = new HashMap<>();
 
     @Override
     public void add(HttpUrl url, List<Cookie> cookies) {
         List<Cookie> oldCookies = allCookies.get(url.host());
-        List<Cookie> needRemove = new ArrayList<>();
 
-        for (Cookie newCookie : cookies) {
-            for (Cookie oldCookie : oldCookies) {
-                if (newCookie.name().equals(oldCookie.name())) {
-                    needRemove.add(oldCookie);
+        if (oldCookies != null) {
+            Iterator<Cookie> itNew = cookies.iterator();
+            Iterator<Cookie> itOld = oldCookies.iterator();
+            while (itNew.hasNext()) {
+                String va = itNew.next().name();
+                while (va != null && itOld.hasNext()) {
+                    String v = itOld.next().name();
+                    if (v != null && va.equals(v)) {
+                        itOld.remove();
+                    }
                 }
             }
+            oldCookies.addAll(cookies);
+        } else {
+            allCookies.put(url.host(), cookies);
         }
-        oldCookies.removeAll(needRemove);
-        oldCookies.addAll(cookies);
 
 
     }
@@ -67,12 +73,10 @@ public class MemoryCookieStore implements CookieStore {
 
     @Override
     public boolean remove(HttpUrl uri, Cookie cookie) {
-        List<Cookie> cookies = allCookies.get(uri);
+        List<Cookie> cookies = allCookies.get(uri.host());
         if (cookie != null) {
             return cookies.remove(cookie);
         }
         return false;
     }
-
-
 }

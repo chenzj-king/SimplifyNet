@@ -61,7 +61,7 @@ public abstract class FileCallBack extends HttpCallBack<File> {
                 sum += len;
                 fos.write(buf, 0, len);
                 final long finalSum = sum;
-                OkHttpUtils.getInstance().getDelivery().post(new Runnable() {
+                OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
                     @Override
                     public void run() {
 

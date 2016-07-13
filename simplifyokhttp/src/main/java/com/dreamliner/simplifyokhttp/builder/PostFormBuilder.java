@@ -16,14 +16,14 @@ import java.util.Map;
  * @date 2016/3/19 18:45
  * @email admin@chenzhongjin.cn
  */
-public class PostFormBuilder extends OkHttpRequestBuilder implements HasParamsable {
+public class PostFormBuilder extends OkHttpRequestBuilder<PostFormBuilder> implements HasParamsable {
 
     private List<FileInput> files = new ArrayList<>();
     private List<TextInput> texts = new ArrayList<>();
 
     @Override
     public RequestCall build() {
-        return new PostFormRequest(url, tag, params, headers, files, texts).build();
+        return new PostFormRequest(url, tag, params, headers, files, texts, id).build();
     }
 
     public PostFormBuilder addFile(String name, String filename, File file) {
@@ -75,19 +75,6 @@ public class PostFormBuilder extends OkHttpRequestBuilder implements HasParamsab
         }
     }
 
-    //
-    @Override
-    public PostFormBuilder url(String url) {
-        this.url = url;
-        return this;
-    }
-
-    @Override
-    public PostFormBuilder tag(Object tag) {
-        this.tag = tag;
-        return this;
-    }
-
     @Override
     public PostFormBuilder params(Map<String, String> params) {
         this.params = params;
@@ -100,22 +87,6 @@ public class PostFormBuilder extends OkHttpRequestBuilder implements HasParamsab
             params = new LinkedHashMap<>();
         }
         params.put(key, val);
-        return this;
-    }
-
-    @Override
-    public PostFormBuilder headers(Map<String, String> headers) {
-        this.headers = headers;
-        return this;
-    }
-
-
-    @Override
-    public PostFormBuilder addHeader(String key, String val) {
-        if (this.headers == null) {
-            headers = new LinkedHashMap<>();
-        }
-        headers.put(key, val);
         return this;
     }
 }

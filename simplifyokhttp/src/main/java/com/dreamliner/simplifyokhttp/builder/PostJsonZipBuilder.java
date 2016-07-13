@@ -16,14 +16,14 @@ import okhttp3.MediaType;
  * @date 2016/3/19 18:45
  * @email admin@chenzhongjin.cn
  */
-public class PostJsonZipBuilder extends OkHttpRequestBuilder implements HasParamsable {
+public class PostJsonZipBuilder extends OkHttpRequestBuilder<PostJsonZipBuilder> implements HasParamsable {
 
     private String mJsonStr = "";
     private MediaType mediaType;
 
     @Override
     public RequestCall build() {
-        return new PostJsonZipRequest(url, tag, params, headers, mJsonStr, mediaType).build();
+        return new PostJsonZipRequest(url, tag, params, headers, mJsonStr, mediaType, id).build();
     }
 
     public PostJsonZipBuilder addMediaType(MediaType mediaType) {
@@ -33,18 +33,6 @@ public class PostJsonZipBuilder extends OkHttpRequestBuilder implements HasParam
 
     public PostJsonZipBuilder addJsonStr(String jsonStr) {
         this.mJsonStr = jsonStr;
-        return this;
-    }
-
-    @Override
-    public PostJsonZipBuilder url(String url) {
-        this.url = url;
-        return this;
-    }
-
-    @Override
-    public PostJsonZipBuilder tag(Object tag) {
-        this.tag = tag;
         return this;
     }
 
@@ -60,22 +48,6 @@ public class PostJsonZipBuilder extends OkHttpRequestBuilder implements HasParam
             params = new LinkedHashMap<>();
         }
         params.put(key, val);
-        return this;
-    }
-
-    @Override
-    public PostJsonZipBuilder headers(Map<String, String> headers) {
-        this.headers = headers;
-        return this;
-    }
-
-
-    @Override
-    public PostJsonZipBuilder addHeader(String key, String val) {
-        if (this.headers == null) {
-            headers = new LinkedHashMap<>();
-        }
-        headers.put(key, val);
         return this;
     }
 }

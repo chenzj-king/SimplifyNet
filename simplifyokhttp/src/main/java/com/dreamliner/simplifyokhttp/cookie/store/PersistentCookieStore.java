@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -21,6 +22,26 @@ import okhttp3.Cookie;
 import okhttp3.HttpUrl;
 
 /**
+ * <pre>
+ *     OkHttpClient client = new OkHttpClient.Builder()
+ *             .cookieJar(new JavaNetCookieJar(new CookieManager(
+ *                     new PersistentCookieStore(getApplicationContext()),
+ *                             CookiePolicy.ACCEPT_ALL))
+ *             .build();
+ *
+ * </pre>
+ * <p>
+ * from http://stackoverflow.com/questions/25461792/persistent-cookie-store-using-okhttp-2-on-android
+ * <p>
+ * <br/>
+ * A persistent cookie store which implements the Apache HttpClient CookieStore interface.
+ * Cookies are stored and will persist on the user's device between application sessions since they
+ * are serialized and stored in SharedPreferences. Instances of this class are
+ * designed to be used with AsyncHttpClient#setCookieStore, but can also be used with a
+ * regular old apache HttpClient/HttpContext if you prefer.
+ */
+
+/**
  * @author chenzj
  * @Title: PersistentCookieStore
  * @Description: 类的描述 -
@@ -28,6 +49,7 @@ import okhttp3.HttpUrl;
  * @email admin@chenzhongjin.cn
  */
 public class PersistentCookieStore implements CookieStore {
+
 
     private static final String LOG_TAG = "PersistentCookieStore";
     private static final String COOKIE_PREFS = "CookiePrefsFile";
@@ -69,21 +91,24 @@ public class PersistentCookieStore implements CookieStore {
     protected void add(HttpUrl uri, Cookie cookie) {
         String name = getCookieToken(cookie);
 
-        // Save cookie into local store, or remove if expired
-        if (!cookie.persistent()) {
-            if (!cookies.containsKey(uri.host()))
+        if (cookie.persistent()) {
+            if (!cookies.containsKey(uri.host())) {
                 cookies.put(uri.host(), new ConcurrentHashMap<String, Cookie>());
+            }
             cookies.get(uri.host()).put(name, cookie);
         } else {
-            if (cookies.containsKey(uri.toString()))
+            if (cookies.containsKey(uri.host())) {
                 cookies.get(uri.host()).remove(name);
+            } else {
+                return;
+            }
         }
 
         // Save cookie into persistent store
         SharedPreferences.Editor prefsWriter = cookiePrefs.edit();
         prefsWriter.putString(uri.host(), TextUtils.join(",", cookies.get(uri.host()).keySet()));
         prefsWriter.putString(COOKIE_NAME_PREFIX + name, encodeCookie(new SerializableHttpCookie(cookie)));
-        prefsWriter.commit();
+        prefsWriter.apply();
     }
 
     protected String getCookieToken(Cookie cookie) {
@@ -100,16 +125,29 @@ public class PersistentCookieStore implements CookieStore {
     @Override
     public List<Cookie> get(HttpUrl uri) {
         ArrayList<Cookie> ret = new ArrayList<Cookie>();
-        if (cookies.containsKey(uri.host()))
-            ret.addAll(cookies.get(uri.host()).values());
+        if (cookies.containsKey(uri.host())) {
+            Collection<Cookie> cookies = this.cookies.get(uri.host()).values();
+            for (Cookie cookie : cookies) {
+                if (isCookieExpired(cookie)) {
+                    remove(uri, cookie);
+                } else {
+                    ret.add(cookie);
+                }
+            }
+        }
+
         return ret;
+    }
+
+    private static boolean isCookieExpired(Cookie cookie) {
+        return cookie.expiresAt() < System.currentTimeMillis();
     }
 
     @Override
     public boolean removeAll() {
         SharedPreferences.Editor prefsWriter = cookiePrefs.edit();
         prefsWriter.clear();
-        prefsWriter.commit();
+        prefsWriter.apply();
         cookies.clear();
         return true;
     }
@@ -127,7 +165,7 @@ public class PersistentCookieStore implements CookieStore {
                 prefsWriter.remove(COOKIE_NAME_PREFIX + name);
             }
             prefsWriter.putString(uri.host(), TextUtils.join(",", cookies.get(uri.host()).keySet()));
-            prefsWriter.commit();
+            prefsWriter.apply();
 
             return true;
         } else {

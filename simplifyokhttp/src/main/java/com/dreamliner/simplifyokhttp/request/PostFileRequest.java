@@ -1,5 +1,7 @@
 package com.dreamliner.simplifyokhttp.request;
 
+import com.dreamliner.simplifyokhttp.OkHttpUtils;
+import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
 import com.dreamliner.simplifyokhttp.utils.Exceptions;
 
 import java.io.File;
@@ -24,8 +26,8 @@ public class PostFileRequest extends OkHttpRequest {
     private MediaType mediaType;
 
     public PostFileRequest(String url, Object tag, Map<String, String> params, Map<String, String> headers, File file, MediaType
-            mediaType) {
-        super(url, tag, params, headers);
+            mediaType, int id) {
+        super(url, tag, params, headers, id);
         this.file = file;
         this.mediaType = mediaType;
 
@@ -40,6 +42,25 @@ public class PostFileRequest extends OkHttpRequest {
     @Override
     protected RequestBody buildRequestBody() {
         return RequestBody.create(mediaType, file);
+    }
+
+    @Override
+    protected RequestBody wrapRequestBody(RequestBody requestBody, final HttpCallBack httpCallBack) {
+        if (httpCallBack == null) return requestBody;
+        CountingRequestBody countingRequestBody = new CountingRequestBody(requestBody, new CountingRequestBody.Listener() {
+            @Override
+            public void onRequestProgress(final long bytesWritten, final long contentLength) {
+
+                OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        httpCallBack.inProgress(bytesWritten * 1.0f / contentLength);
+                    }
+                });
+
+            }
+        });
+        return countingRequestBody;
     }
 
     @Override

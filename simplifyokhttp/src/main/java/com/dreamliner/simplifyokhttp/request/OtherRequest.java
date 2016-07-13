@@ -28,8 +28,8 @@ public class OtherRequest extends OkHttpRequest {
     private String content;
 
     public OtherRequest(RequestBody requestBody, String content, String method, String url, Object tag, Map<String, String> params,
-                        Map<String, String> headers) {
-        super(url, tag, params, headers);
+                        Map<String, String> headers, int id) {
+        super(url, tag, params, headers, id);
         this.requestBody = requestBody;
         this.method = method;
         this.content = content;

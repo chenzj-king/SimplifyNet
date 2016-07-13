@@ -6,7 +6,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -31,19 +30,27 @@ import javax.net.ssl.X509TrustManager;
  */
 public class HttpsUtils {
 
-    public static SSLSocketFactory getSslSocketFactory(InputStream[] certificates, InputStream bksFile, String password) {
+    public static class SSLParams {
+        public SSLSocketFactory sSLSocketFactory;
+        public X509TrustManager trustManager;
+    }
+
+    public static SSLParams getSslSocketFactory(InputStream[] certificates, InputStream bksFile, String password) {
+        SSLParams sslParams = new SSLParams();
         try {
             TrustManager[] trustManagers = prepareTrustManager(certificates);
             KeyManager[] keyManagers = prepareKeyManager(bksFile, password);
             SSLContext sslContext = SSLContext.getInstance("TLS");
-            TrustManager trustManager = null;
+            X509TrustManager trustManager = null;
             if (trustManagers != null) {
                 trustManager = new MyTrustManager(chooseTrustManager(trustManagers));
             } else {
                 trustManager = new UnSafeTrustManager();
             }
-            sslContext.init(keyManagers, new TrustManager[]{trustManager}, new SecureRandom());
-            return sslContext.getSocketFactory();
+            sslContext.init(keyManagers, new TrustManager[]{trustManager}, null);
+            sslParams.sSLSocketFactory = sslContext.getSocketFactory();
+            sslParams.trustManager = trustManager;
+            return sslParams;
         } catch (NoSuchAlgorithmException e) {
             throw new AssertionError(e);
         } catch (KeyManagementException e) {
@@ -73,7 +80,7 @@ public class HttpsUtils {
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {
-            return new X509Certificate[]{};
+            return new java.security.cert.X509Certificate[]{};
         }
     }
 
@@ -91,15 +98,12 @@ public class HttpsUtils {
                 try {
                     if (certificate != null)
                         certificate.close();
-                } catch (IOException e)
-
-                {
+                } catch (IOException e) {
                 }
             }
             TrustManagerFactory trustManagerFactory = null;
 
-            trustManagerFactory = TrustManagerFactory.
-                    getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(keyStore);
 
             TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
@@ -115,7 +119,6 @@ public class HttpsUtils {
             e.printStackTrace();
         }
         return null;
-
     }
 
     private static KeyManager[] prepareKeyManager(InputStream bksFile, String password) {
@@ -165,10 +168,8 @@ public class HttpsUtils {
             this.localTrustManager = localTrustManager;
         }
 
-
         @Override
         public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
         }
 
         @Override
@@ -179,7 +180,6 @@ public class HttpsUtils {
                 localTrustManager.checkServerTrusted(chain, authType);
             }
         }
-
 
         @Override
         public X509Certificate[] getAcceptedIssuers() {

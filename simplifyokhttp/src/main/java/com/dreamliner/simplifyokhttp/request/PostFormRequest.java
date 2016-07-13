@@ -30,8 +30,8 @@ public class PostFormRequest extends OkHttpRequest {
     private List<TextInput> texts;
 
     public PostFormRequest(String url, Object tag, Map<String, String> params, Map<String, String> headers, List<FileInput> files,
-                           List<TextInput> texts) {
-        super(url, tag, params, headers);
+                           List<TextInput> texts, int id) {
+        super(url, tag, params, headers, id);
         this.files = files;
         this.texts = texts;
     }
@@ -66,7 +66,7 @@ public class PostFormRequest extends OkHttpRequest {
             @Override
             public void onRequestProgress(final long bytesWritten, final long contentLength) {
 
-                OkHttpUtils.getInstance().getDelivery().post(new Runnable() {
+                OkHttpUtils.getInstance().getDelivery().execute(new Runnable() {
                     @Override
                     public void run() {
                         callback.inProgress(bytesWritten * 1.0f / contentLength);

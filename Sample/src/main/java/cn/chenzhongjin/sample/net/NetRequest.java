@@ -269,8 +269,10 @@ public class NetRequest {
         }
 
         try {
-            OkHttpUtils.get().url(HttpUrl.BASE_WEATHER_URL).addHeader("apikey", "15f0d14ed33720b6b73ec8a3f7bb4d46")
-                    .params(finalparams).tag(object).build().execute(new HttpCallBack() {
+            OkHttpUtils.get().url(HttpUrl.BASE_WEATHER_URL)
+                    .addHeader("apikey", "15f0d14ed33720b6b73ec8a3f7bb4d46")
+                    .params(finalparams)
+                    .tag(object).build().execute(new HttpCallBack() {
 
                 @Override
                 public void onError(int errorCode, String errorMes, Call call, Exception e) {

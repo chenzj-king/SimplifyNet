@@ -29,9 +29,9 @@ public class PostJsonZipRequest extends OkHttpRequest {
     private String mJsonStr;
     private MediaType mediaType;
 
-    public PostJsonZipRequest(String url, Object tag, Map<String, String> params, Map<String, String> headers, String mJsonStr, MediaType
-            mediaType) {
-        super(url, tag, params, headers);
+    public PostJsonZipRequest(String url, Object tag, Map<String, String> params, Map<String, String> headers, String mJsonStr,
+                              MediaType mediaType, int id) {
+        super(url, tag, params, headers, id);
         this.mJsonStr = mJsonStr;
         this.mediaType = mediaType;
 
