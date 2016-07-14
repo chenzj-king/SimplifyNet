@@ -72,13 +72,17 @@ public class BaseResponse {
         return this.mResponse.body().charStream();
     }
 
-    public <T> Object getResponseBodyStringToObject(Type type) throws Exception {
+    public <T> T getResponseBodyStringToObject(Class<T> classOfT) throws IOException {
+        return GsonUtil.fromJson(bodyString, classOfT);
+    }
+
+    public Object getResponseBodyStringToObject(Type type) throws IOException {
         if (TextUtils.isEmpty(bodyString))
             getResponseBodyToString();
         return GsonUtil.fromJsonToObj(bodyString, type);
     }
 
-    public <T> Object getResponseBodyReaderToObject(Type type) throws Exception {
+    public <T> Object getResponseBodyReaderToObject(Type type) throws IOException {
         Reader reader = this.mResponse.body().charStream();
         return GsonUtil.fromJsonToObj(reader, type);
     }

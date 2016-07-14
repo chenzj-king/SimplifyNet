@@ -1,5 +1,6 @@
 package com.dreamliner.simplifyokhttp;
 
+import android.util.AndroidRuntimeException;
 import android.util.Log;
 
 import com.dreamliner.simplifyokhttp.builder.GetBuilder;
@@ -170,7 +171,7 @@ public class OkHttpUtils {
             public void onResponse(final Call call, final Response response) {
                 if (response.code() >= 400 && response.code() <= 599) {
                     try {
-                        sendFailResultCallback(call, new RuntimeException(response.body().string()), finalHttpCallBack);
+                        sendFailResultCallback(call, new AndroidRuntimeException(response.body().string()), finalHttpCallBack);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -213,9 +214,11 @@ public class OkHttpUtils {
                     //这是上层parseNetworkResponse的时候.如果gson解释有问题.就会抛出这个异常.就可以走onError回调
                     httpCallBack.onError(((DreamLinerException) exception).getErrorCode(),
                             ((DreamLinerException) exception).getErrorMessage(), call, exception);
-                } else {
+                } else if (exception instanceof AndroidRuntimeException) {
                     //请求状态码非200的提示
-                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "连接服务器失败，请重试！", call, exception);
+                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "连接服务器失败，返回的状态码不为200，请重试！", call, exception);
+                } else if (exception instanceof RuntimeException) {
+                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "parseNetworkResponse抛出异常，请重试！", call, exception);
                 }
                 httpCallBack.onAfter();
             }

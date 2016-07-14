@@ -16,6 +16,10 @@ public class GsonUtil {
 
     static Gson gson = new Gson();
 
+    public static Gson getGson() {
+        return gson;
+    }
+
     public static Object fromJsonToObj(String jsonStr, Type type) {
         Object object = null;
         try {

@@ -2,7 +2,6 @@ package com.dreamliner.simplifyokhttp.callback;
 
 import okhttp3.Call;
 import okhttp3.Request;
-import okhttp3.Response;
 
 /**
  * @author chenzj
@@ -15,12 +14,12 @@ public abstract class HttpCallBack<T> {
 
     public abstract void onError(int errorCode, String errorMes, Call call, Exception e);
 
-    public abstract void onResponse(Object response);
+    public abstract void onResponse(T response);
 
     /**
      * Thread Pool Thread
      *
-     * @param response
+     * @param baseResponse
      */
     public abstract T parseNetworkResponse(BaseResponse baseResponse) throws Exception;
 

@@ -21,6 +21,7 @@ package cn.chenzhongjin.sample.ui.activity.presenter;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 
 import com.dreamliner.simplifyokhttp.callback.DataCallBack;
 import com.orhanobut.logger.Logger;
@@ -62,8 +63,8 @@ public class WeatherPresenterCompl implements IWeatherPresenter {
 
     @Override
     public void doSearchWeather(Context context, String cityName) {
-        if (null != cityName && cityName.length() > 0) {
-            Map<String, String> map = new HashMap<String, String>();
+        if (!TextUtils.isEmpty(cityName)) {
+            Map<String, String> map = new HashMap<>();
             map.put("cityname", cityName);
             NetRequest.getWeatherMsg(map, mUUID, new DataCallBack<Weather>() {
                 @Override

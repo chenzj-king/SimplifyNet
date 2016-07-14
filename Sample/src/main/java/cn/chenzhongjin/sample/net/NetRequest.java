@@ -30,12 +30,11 @@ import android.text.TextUtils;
 import com.dreamliner.simplifyokhttp.OkHttpUtils;
 import com.dreamliner.simplifyokhttp.callback.BaseResponse;
 import com.dreamliner.simplifyokhttp.callback.DataCallBack;
-import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
+import com.dreamliner.simplifyokhttp.callback.GenericsCallback;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
-import com.google.gson.reflect.TypeToken;
+import com.orhanobut.logger.Logger;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +42,6 @@ import cn.chenzhongjin.sample.AppContext;
 import cn.chenzhongjin.sample.entity.Weather;
 import cn.chenzhongjin.sample.net.utils.NetUtils;
 import cn.chenzhongjin.sample.net.utils.NetworkType;
-import okhttp3.Call;
 
 /**
  * @author chenzj
@@ -207,33 +205,13 @@ public class NetRequest {
         }
     }
 
-    // TODO: 2015/10/25 get APpsecret.
+    // TODO: 2015/10/25 get Appsecret.
     public String getAppsecret() {
         return appsecret;
     }
 
     public void destroy() {
         singleton = null;
-    }
-
-    public Map<String, String> assembleCommonParams() throws DreamLinerException {
-        HashMap<String, String> map = new HashMap<String, String>();
-        //添加服务器可能需要统计/校验的参数
-        /*
-        map.put("app_key", getInstanse().getAppKey());
-        map.put("device_id", this.getDeviceId());
-        map.put("pack_id", getInstanse().getPackId());
-        map.put("sdk_version", getInstanse().getSdkVersion());
-        map.put("client_os_type", String.valueOf(getInstanse().getClientOsType()));
-        */
-        return map;
-    }
-
-    public static Map<String, String> addCommonParams(Map<String, String> specificParams) throws DreamLinerException {
-        HashMap<String, String> params = new HashMap<>();
-        params.putAll(getInstanse().assembleCommonParams());
-        params.putAll(specificParams);
-        return params;
     }
 
     public static <T> boolean checkNetStatus(DataCallBack<T> callback) {
@@ -244,60 +222,91 @@ public class NetRequest {
         return true;
     }
 
+    private static class CheckBean {
+
+        private boolean isAllow;
+        private Map<String, String> params;
+
+        public CheckBean(boolean isAllow, Map<String, String> params) {
+            this.isAllow = isAllow;
+            this.params = params;
+        }
+
+        public boolean isAllow() {
+            return isAllow;
+        }
+
+        public Map<String, String> getParams() {
+            return params;
+        }
+    }
+
+    public static Map<String, String> addCommonParams(Map<String, String> specificParams) throws DreamLinerException {
+        HashMap<String, String> params = new HashMap<>();
+
+        params.putAll(specificParams);
+
+        boolean testError = false;
+        if (testError) {
+            throw new DreamLinerException(ErrorCode.NO_LOGIN, "未登录");
+        }
+        params.put("token", "12345.上山打老虎");
+
+        //添加服务器可能需要统计/校验的参数
+        /*
+        map.put("app_key", getInstanse().getAppKey());
+        map.put("device_id", this.getDeviceId());
+        map.put("pack_id", getInstanse().getPackId());
+        map.put("sdk_version", getInstanse().getSdkVersion());
+        map.put("client_os_type", String.valueOf(getInstanse().getClientOsType()));
+        */
+        return params;
+    }
+
     public static <T> Map<String, String> addCommonParams(Map<String, String> specificParams, DataCallBack<T> callback) {
 
-        Map<String, String> finalparams;
         try {
-            finalparams = addCommonParams(specificParams);
+            specificParams = addCommonParams(specificParams);
         } catch (DreamLinerException e) {
             callback.onError(e.getErrorCode(), e.getErrorMessage());
             return null;
         }
-        return finalparams;
+        return specificParams;
+    }
+
+    private static CheckBean checkNetAndAddParams(Map<String, String> specificParams, DataCallBack<Weather> callback) {
+
+        if (!checkNetStatus(callback)) {
+            //这里进行网络状态判断.無网络直接回调onError.return该请求
+            return new CheckBean(false, specificParams);
+        }
+        specificParams = addCommonParams(specificParams, callback);
+
+        //这里可以进行是否登录的校验.如果没有Token就回调onEror.并且return该请求(类似登录接口/查询无需登录权限的业务就无需调用该方法)
+        return new CheckBean(null != specificParams, specificParams);
+
     }
 
     public static void getWeatherMsg(Map<String, String> specificParams, Object object, final DataCallBack<Weather> callback) {
 
-        //这里进行网络状态判断.無网络直接回调onError.return该请求
-        if (!checkNetStatus(callback)) {
-            return;
-        }
-        //这里可以进行是否登录的校验.如果没有Token就回调onEror.并且return该请求(类似登录接口/查询无需登录权限的业务就无需调用该方法)
-        Map<String, String> finalparams = addCommonParams(specificParams, callback);
-        if (null == finalparams) {
+        CheckBean checkBean = checkNetAndAddParams(specificParams, callback);
+        if (!checkBean.isAllow()) {
             return;
         }
 
         try {
             OkHttpUtils.get().url(HttpUrl.BASE_WEATHER_URL)
                     .addHeader("apikey", "15f0d14ed33720b6b73ec8a3f7bb4d46")
-                    .params(finalparams)
-                    .tag(object).build().execute(new HttpCallBack() {
+                    .params(checkBean.getParams())
+                    .tag(object).build()
+                    .execute(new GenericsCallback<Weather>("解释天气数据失败", callback) {
+                        @Override
+                        public Weather parseNetworkResponse(BaseResponse baseResponse) throws Exception {
+                            Logger.t(TAG).i("url=" + baseResponse.getResponse().request().url());
+                            return super.parseNetworkResponse(baseResponse);
+                        }
+                    });
 
-                @Override
-                public void onError(int errorCode, String errorMes, Call call, Exception e) {
-                    callback.onError(errorCode, errorMes);
-                }
-
-                @Override
-                public void onResponse(Object response) {
-                    callback.onSuccess((Weather) response);
-                }
-
-                @Override
-                public Object parseNetworkResponse(BaseResponse baseResponse) throws Exception {
-
-                    //可以保存报文到本地出问题的时候方便调试
-                    Type type = (new TypeToken<Weather>() {
-                    }).getType();
-                    Weather weather = (Weather) baseResponse.getResponseBodyStringToObject(type);
-
-                    if (null == weather) {
-                        throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, "解释天气数据失败");
-                    }
-                    return weather;
-                }
-            });
         } catch (Exception e) {
             e.printStackTrace();
             OkHttpUtils.getInstance().postError(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);
