@@ -33,7 +33,6 @@ import com.dreamliner.simplifyokhttp.callback.DataCallBack;
 import com.dreamliner.simplifyokhttp.callback.GenericsCallback;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
-import com.orhanobut.logger.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -302,11 +301,9 @@ public class NetRequest {
                     .execute(new GenericsCallback<Weather>("解释天气数据失败", callback) {
                         @Override
                         public Weather parseNetworkResponse(BaseResponse baseResponse) throws Exception {
-                            Logger.t(TAG).i("url=" + baseResponse.getResponse().request().url());
                             return super.parseNetworkResponse(baseResponse);
                         }
                     });
-
         } catch (Exception e) {
             e.printStackTrace();
             OkHttpUtils.getInstance().postError(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);

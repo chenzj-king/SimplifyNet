@@ -40,6 +40,9 @@ public abstract class GenericsCallback<T> extends HttpCallBack<T> {
 
         Class<T> entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 
+        if (entityClass == String.class) {
+            return (T) baseResponse.getResponseBodyToString();
+        }
         T bean = GsonUtil.getGson().fromJson(baseResponse.getResponseBodyToString(), entityClass);
         if (null == bean) {
             throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, mErrMes);
