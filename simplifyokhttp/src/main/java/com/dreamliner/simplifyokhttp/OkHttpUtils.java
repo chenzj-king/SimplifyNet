@@ -14,11 +14,9 @@ import com.dreamliner.simplifyokhttp.builder.PostStringBuilder;
 import com.dreamliner.simplifyokhttp.callback.BaseResponse;
 import com.dreamliner.simplifyokhttp.callback.DataCallBack;
 import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
-import com.dreamliner.simplifyokhttp.error.ErrorDataMes;
 import com.dreamliner.simplifyokhttp.request.RequestCall;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
-import com.dreamliner.simplifyokhttp.utils.GsonUtil;
 import com.dreamliner.simplifyokhttp.utils.Platform;
 
 import java.io.IOException;
@@ -219,6 +217,8 @@ public class OkHttpUtils {
                     httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "连接服务器失败，返回的状态码不为200，请重试！", call, exception);
                 } else if (exception instanceof RuntimeException) {
                     httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "parseNetworkResponse抛出异常，请重试！", call, exception);
+                } else {
+                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "未知异常，请重试！", call, exception);
                 }
                 httpCallBack.onAfter();
             }
@@ -229,26 +229,12 @@ public class OkHttpUtils {
                                           final HttpCallBack httpCallBack) {
         if (httpCallBack == null) return;
 
-        final ErrorDataMes dataErrorMes = parseResponseHandler(baseResponse);
-
         mPlatform.execute(new Runnable() {
             @Override
             public void run() {
 
                 try {
-                    // TODO: 2016/4/10 应该根据自己服务器的错误定义来进行回调到onEror/onSuccess.
-                    if (null != dataErrorMes) {
-                        if (dataErrorMes.getErr() == 0 && dataErrorMes.getMsg().equals("success")) {
-                            //服务器返回成功的状态码和信息
-                            httpCallBack.onResponse(object);
-                        } else {
-                            //正常的服务器错误状态码
-                            httpCallBack.onError(ErrorCode.SERVER_CUSTOM_ERROR, dataErrorMes.getMsg(), call, null);
-                        }
-                    } else {
-                        //回来的报文不是规范Json导致无法用Gson解释catch
-                        httpCallBack.onError(ErrorCode.EXCHANGE_DATA_ERROR, "解释数据错误", null, null);
-                    }
+                    httpCallBack.onResponse(object);
                 } catch (Exception e) {
                     e.printStackTrace();
                     //理论上以后都不会走这边.因为在上层parseNetworkResponse的时候.如果responseResult不是标准json.
@@ -260,15 +246,6 @@ public class OkHttpUtils {
                 }
             }
         });
-    }
-
-    public static ErrorDataMes parseResponseHandler(BaseResponse basicResponse) {
-        try {
-            return (ErrorDataMes) GsonUtil.fromJsonToObj(basicResponse.getResponseBodyToString(), ErrorDataMes.class);
-        } catch (Exception dataErrorMes) {
-            //理论上不会走到这里.因为上一层pare的时候jsonStr都可以是正常的.
-            return null;
-        }
     }
 
     public void cancelTag(Object tag) {

@@ -44,9 +44,10 @@ import cn.chenzhongjin.sample.ui.activity.view.IWeatherView;
  */
 public class WeatherPresenterCompl implements IWeatherPresenter {
 
+    private static final String TAG = "WeatherPresenterCompl";
+
     private UUID mUUID = UUID.randomUUID();
 
-    Weather weather;
     IWeatherView iWeatherView;
     Handler handler;
 
@@ -66,6 +67,7 @@ public class WeatherPresenterCompl implements IWeatherPresenter {
         if (!TextUtils.isEmpty(cityName)) {
             Map<String, String> map = new HashMap<>();
             map.put("cityname", cityName);
+
             NetRequest.getWeatherMsg(map, mUUID, new DataCallBack<Weather>() {
                 @Override
                 public void onSuccess(Weather weather) {
@@ -73,9 +75,9 @@ public class WeatherPresenterCompl implements IWeatherPresenter {
                 }
 
                 @Override
-                public void onError(int code, String errorMsg) {
-                    Logger.i("SearchWeather error mes>" + errorMsg);
-                    iWeatherView.onSearchWeatherError(code, errorMsg);
+                public void onError(int errorCode, String errorMes) {
+                    Logger.t(TAG).i("errorCode=" + errorCode + "\t\t" + errorMes);
+                    iWeatherView.onSearchWeatherError(errorCode, errorMes);
                 }
             });
         } else {

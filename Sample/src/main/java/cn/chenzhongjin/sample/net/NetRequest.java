@@ -28,13 +28,11 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
 import com.dreamliner.simplifyokhttp.OkHttpUtils;
-import com.dreamliner.simplifyokhttp.callback.BaseResponse;
 import com.dreamliner.simplifyokhttp.callback.DataCallBack;
 import com.dreamliner.simplifyokhttp.callback.GenericsCallback;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import cn.chenzhongjin.sample.AppContext;
@@ -213,14 +211,6 @@ public class NetRequest {
         singleton = null;
     }
 
-    public static <T> boolean checkNetStatus(DataCallBack<T> callback) {
-        if (!NetUtils.isNetworkAvailable(AppContext.getInstance())) {
-            OkHttpUtils.getInstance().postError(ErrorCode.NET_DISABLE, "请检查你的网络状态!", callback);
-            return false;
-        }
-        return true;
-    }
-
     private static class CheckBean {
 
         private boolean isAllow;
@@ -240,17 +230,26 @@ public class NetRequest {
         }
     }
 
-    public static Map<String, String> addCommonParams(Map<String, String> specificParams) throws DreamLinerException {
-        HashMap<String, String> params = new HashMap<>();
+    public static <T> boolean checkNetStatus(DataCallBack<T> callback) {
+        if (!NetUtils.isNetworkAvailable(AppContext.getInstance())) {
+            OkHttpUtils.getInstance().postError(ErrorCode.NET_DISABLE, "请检查你的网络状态!", callback);
+            return false;
+        }
+        return true;
+    }
 
-        params.putAll(specificParams);
+    public static <T> Map<String, String> addCommonParams(Map<String, String> params, DataCallBack<T> callback) {
 
+        //添加常用的参数
+
+        //这里进行必要参数的校验.例如token之类的不能为空
         boolean testError = false;
         if (testError) {
-            throw new DreamLinerException(ErrorCode.NO_LOGIN, "未登录");
+            OkHttpUtils.getInstance().postError(ErrorCode.NO_LOGIN, "未登录", callback);
+            return null;
         }
-        params.put("token", "12345.上山打老虎");
 
+        params.put("token", "12345.上山打老虎");
         //添加服务器可能需要统计/校验的参数
         /*
         map.put("app_key", getInstanse().getAppKey());
@@ -260,17 +259,6 @@ public class NetRequest {
         map.put("client_os_type", String.valueOf(getInstanse().getClientOsType()));
         */
         return params;
-    }
-
-    public static <T> Map<String, String> addCommonParams(Map<String, String> specificParams, DataCallBack<T> callback) {
-
-        try {
-            specificParams = addCommonParams(specificParams);
-        } catch (DreamLinerException e) {
-            callback.onError(e.getErrorCode(), e.getErrorMessage());
-            return null;
-        }
-        return specificParams;
     }
 
     private static CheckBean checkNetAndAddParams(Map<String, String> specificParams, DataCallBack<Weather> callback) {
@@ -299,10 +287,6 @@ public class NetRequest {
                     .params(checkBean.getParams())
                     .tag(object).build()
                     .execute(new GenericsCallback<Weather>("解释天气数据失败", callback) {
-                        @Override
-                        public Weather parseNetworkResponse(BaseResponse baseResponse) throws Exception {
-                            return super.parseNetworkResponse(baseResponse);
-                        }
                     });
         } catch (Exception e) {
             e.printStackTrace();

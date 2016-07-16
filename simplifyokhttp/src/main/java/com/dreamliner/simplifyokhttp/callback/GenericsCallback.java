@@ -1,5 +1,6 @@
 package com.dreamliner.simplifyokhttp.callback;
 
+import com.dreamliner.simplifyokhttp.error.ErrorDataMes;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
 import com.dreamliner.simplifyokhttp.utils.GsonUtil;
@@ -43,11 +44,33 @@ public abstract class GenericsCallback<T> extends HttpCallBack<T> {
         if (entityClass == String.class) {
             return (T) baseResponse.getResponseBodyToString();
         }
+
+        final ErrorDataMes dataErrorMes = parseResponseHandler(baseResponse);
+
+        // TODO: 2016/4/10 应该根据自己服务器的错误定义来进行回调到onEror/onSuccess.
+        if (null != dataErrorMes) {
+            if (dataErrorMes.getErr() != 0 && !dataErrorMes.getMsg().equals("success")) {
+                throw new DreamLinerException(dataErrorMes.getErr(), dataErrorMes.getMsg());
+            }
+        } else {
+            throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, "解释数据错误");
+        }
+
         T bean = GsonUtil.getGson().fromJson(baseResponse.getResponseBodyToString(), entityClass);
         if (null == bean) {
             throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, mErrMes);
         }
         return bean;
+    }
+
+
+    public ErrorDataMes parseResponseHandler(BaseResponse basicResponse) {
+        try {
+            return (ErrorDataMes) GsonUtil.fromJsonToObj(basicResponse.getResponseBodyToString(), ErrorDataMes.class);
+        } catch (Exception dataErrorMes) {
+            //理论上不会走到这里.因为上一层pare的时候jsonStr都可以是正常的.
+            return null;
+        }
     }
 
 }
