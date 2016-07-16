@@ -5,69 +5,47 @@
 ## 源码分析 ##
 
 #### 请求开始 ####
-    Map<String, String> map = new HashMap<String, String>();
-	map.put("cityname", cityName);
-	NetRequest.getWeatherMsg(map, mUUID, new DataCallBack<Weather>() {
-    	@Override
-    	public void onSuccess(Weather weather) {
-			//成功的处理
-    	}
 
-    	@Override
-    	public void onError(int code, String errorMsg) {
-    	    //失败的处理
-    	}
-	});
+	Map<String, String> map = new HashMap<>();
+    map.put("cityname", cityName);
+
+    NetRequest.getWeatherMsg(map, mUUID, new DataCallBack<Weather>() {
+        @Override
+        public void onSuccess(Weather weather) {
+			//处理成功回调
+        }
+
+        @Override
+        public void onError(int errorCode, String errorMes) {
+			//处理失败回调
+        }
+    });
 
 #### 封装在请求类的处理 ####
-    public static void getWeatherMsg(Map<String, String> specificParams, Object object, final DataCallBack<Weather> callback) {
 
-        //这里进行网络状态判断.無网络直接回调onError.return该请求
-        if (!checkNetStatus(callback)) {
-            return;
-        }
-        //这里可以进行是否登录的校验.如果没有Token就回调onEror.并且return该请求(类似登录接口/查询无需登录权限的业务就无需调用该方法)
-        Map<String, String> finalparams = addCommonParams(specificParams, callback);
-        if (null == finalparams) {
-            return;
-        }
+	//CheckBean是专门保存网络状态是否正常&添加常用参数是否正常和参数列表的一個实体
+	CheckBean checkBean = checkNetAndAddParams(specificParams, callback);
+    if (!checkBean.isAllow()) {
+		//checkNetAndAddParams的时候如果发现有问题直接已经DataCallback到onErro.然后这里拦截不再进行网络请求
+        return;
+    }
 
-        try {
-            OkHttpUtils.get().url(HttpUrl.BASE_WEATHER_URL).addHeader("apikey", "自己申请一下apikey")
-                    .params(finalparams).tag(object).build().execute(new HttpCallBack() {
-
-                @Override
-                public void onError(int errorCode, String errorMes, Call call, Exception e) {
-                    callback.onError(errorCode, errorMes);
-                }
-
-                @Override
-                public void onResponse(Object response) {
-                    callback.onSuccess((Weather) response);
-                }
-
-                @Override
-                public Object parseNetworkResponse(Response response) throws Exception {
-
-                    BaseResponse baseResponse = new BaseResponse(response);
-                    //可以保存报文到本地出问题的时候方便调试
-                    Type type = (new TypeToken<Weather>() {
-                    }).getType();
-                    Weather weather = (Weather) GsonUtil.fromJsonToObj(baseResponse.getResponseBodyToString(), type);
-
-                    if (null == weather) {
-                        throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, "解释天气数据失败");
-                    }
-                    return weather;
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            OkHttpUtils.getInstance().postErro(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);
-        }
+    try {
+		//这里进行指定get请求.还有添加url.添加头部.添加参数.添加tag[方便后续Act/Fra关闭的时候执行cancel]
+        OkHttpUtils.get().url(HttpUrl.BASE_WEATHER_URL)
+                .addHeader("apikey", "自己去申请一個apikey")
+                .params(checkBean.getParams())
+                .tag(object).build()
+				//GenericsCallback是自定义泛型的callback.进行了解释错误的时候的封装&网络处理好之后处理上层的DataCallback
+                .execute(new GenericsCallback<Weather>("解释天气数据失败", callback) {
+                });
+    } catch (Exception e) {
+        e.printStackTrace();
+        OkHttpUtils.getInstance().postError(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);
     }
 
 #### 底册okhttpUtils封装的回调处理 ####
+
     public void execute(final RequestCall requestCall, HttpCallBack httpCallBack) {
         if (httpCallBack == null)
             httpCallBack = HttpCallBack.HttpCallBackDefault;
@@ -76,7 +54,7 @@
         requestCall.getCall().enqueue(new okhttp3.Callback() {
             @Override
             public void onFailure(Call call, final IOException e) {
-				//底层回调onError进行处理
+				//直接最底层的请求失败
                 sendFailResultCallback(call, e, finalHttpCallBack);
             }
 
@@ -84,8 +62,8 @@
             public void onResponse(final Call call, final Response response) {
                 if (response.code() >= 400 && response.code() <= 599) {
                     try {
-						/非200状态码都分发到onError
-                        sendFailResultCallback(call, new RuntimeException(response.body().string()), finalHttpCallBack);
+						//状态码不为200也判断为失败来执行
+                        sendFailResultCallback(call, new AndroidRuntimeException(response.body().string()), finalHttpCallBack);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -93,11 +71,12 @@
                 }
 
                 try {
-					//执行callback的解释数据方法.在上面'封装在请求类的处理'里面有相关的sample.如果jsonString
-				    //不规范.则抛出自定义的异常
-                    Object object = finalHttpCallBack.parseNetworkResponse(response);
-					//解释成功之后执行成功的处理
-                    sendSuccessResultCallback(object, response, finalHttpCallBack);
+					//自己包装的一层BaseResponse.用来兼容gzip和方便jsonStr→bean
+                    BaseResponse baseResponse = new BaseResponse(response);
+                    Object object = finalHttpCallBack.parseNetworkResponse(baseResponse);
+
+					//如果parseNetworkResponse没有抛出自定义的异常/其他异常.则走成功的逻辑
+                    sendSuccessResultCallback(object, call, finalHttpCallBack);
                 } catch (Exception e) {
                     sendFailResultCallback(call, e, finalHttpCallBack);
                 }
@@ -107,20 +86,18 @@
     }
 
 #### 对成功/失败进行状态判断后再执行回调 ####
+
     public void sendFailResultCallback(final Call call, final Exception exception, final HttpCallBack httpCallBack) {
         if (httpCallBack == null) return;
 
-
-        mDelivery.post(new Runnable() {
+        mPlatform.execute(new Runnable() {
             @Override
             public void run() {
 
                 if (exception instanceof IOException) {
                     if (exception instanceof SocketException) {
                         if (call.isCanceled()) {
-							//很多时候会不小心打开错Act.然后用户立马就关闭页面.为了不需要做无用功的请求.主动根据tag来
-							//kill掉之后会触发到这里
-                            Log.i("EasyNet", "user finish Act/Fra cancel the request");
+                            Log.i("simplifyokhttp", "user finish Act/Fra cancel the request");
                         } else {
                             httpCallBack.onError(ErrorCode.SOCKET_EXCEPTION, "连接服务器失败，请重试！", call, exception);
                         }
@@ -129,50 +106,112 @@
                     } else {
                         httpCallBack.onError(ErrorCode.OTHER_IOEXCEPTION, "连接服务器失败，请重试！", call, exception);
                     }
-                } else if (exception instanceof DreamLinerException) {
-                    //这是上层parseNetworkResponse的时候.如果gson解释有问题.就会抛出这个异常.就可以走onError回调
-                    httpCallBack.onError(((DreamLinerException) exception).getErrorCode(),
-                            ((DreamLinerException) exception).getErrorMessage(), call, exception);
-                } else {
+                } else if (exception instanceof AndroidRuntimeException) {
+
                     //请求状态码非200的提示
-                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "连接服务器失败，请重试！", call, exception);
+                    httpCallBack.onError(ErrorCode.RESPONSE_ERROR_CODE_EXCEPTION, "请求成功,但返回的状态码不为200，请重试！", call, exception);
+
+                } else if (exception instanceof DreamLinerException) {
+
+                    //判断到是服务器返回的异常
+                    DreamLinerException dreamLinerException = (DreamLinerException) exception;
+                    httpCallBack.onError(dreamLinerException.getErrorCode(), dreamLinerException.getErrorMessage(), call, exception);
+
+                } else {
+                    //在parseNetworkResponse引发的异常/onResponse的时候操作不当引发的异常
+                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, exception.getMessage(), call, exception);
                 }
                 httpCallBack.onAfter();
             }
         });
     }
 
-    public void sendSuccessResultCallback(final Object object, final Response response, final HttpCallBack httpCallBack) {
+    public void sendSuccessResultCallback(final Object object, final Call call, final HttpCallBack httpCallBack) {
         if (httpCallBack == null) return;
 
-        final BaseResponse basicResponse = new BaseResponse(response);
-        final ErrorDataMes dataErrorMes = parseResponseHandler(basicResponse);
-
-        mDelivery.post(new Runnable() {
+        mPlatform.execute(new Runnable() {
             @Override
             public void run() {
 
-                // TODO: 2016/4/10 应该根据自己服务器的错误定义来进行回调到onEror/onSuccess.
-                // 现在只用来测试.所以不进行判断拦截.
-                httpCallBack.onResponse(object);
-                /*
-                if (null != dataErrorMes) {
-                    if (dataErrorMes.getErr() == 0 && dataErrorMes.getMsg().equals("成功")) {
-                        //服务器返回成功的状态码和信息
-                        httpCallBack.onResponse(object);
-                    } else {
-                        //正常的服务器错误状态码
-                        httpCallBack.onError(ErrorCode.SERVER_CUSTOM_ERROR, dataErrorMes.getMsg(), null, null);
-                    }
-                } else {
-                    //回来的报文不是规范Json导致无法用Gson解释catch
-                    httpCallBack.onError(ErrorCode.EXCHANGE_DATA_ERROR, "解释数据错误", null, null);
-                }*/
-
-                httpCallBack.onAfter();
+                try {
+                    httpCallBack.onResponse(object);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    //这里是为了防止在执行onResponse的时候操作不当导致crash
+                    httpCallBack.onError(ErrorCode.EXCHANGE_DATA_ERROR, e.getMessage(), call, e);
+                } finally {
+                    httpCallBack.onAfter();
+                }
             }
         });
     }
+
+#### 泛型CallBack的自定义封装 ####
+
+	public abstract class GenericsCallback<T> extends HttpCallBack<T> {
+	
+	    private String mErrMes;
+	    private DataCallBack<T> mDataCallBack;
+	
+	    public GenericsCallback(@NonNull String errMes, DataCallBack<T> dataCallBack) {
+	        mErrMes = errMes;
+	        mDataCallBack = dataCallBack;
+	    }
+	
+	    @Override
+	    public void onError(int errorCode, String errorMes, Call call, Exception e) {
+			//默认执行DataCallbck的失败回调
+	        mDataCallBack.onError(errorCode, errorMes);	
+	    }
+	
+	    @Override
+	    public void onResponse(T response) {
+			//默认执行DataCallbck的成功回调
+	        mDataCallBack.onSuccess(response);
+	    }
+	
+	    @Override
+	    public T parseNetworkResponse(BaseResponse baseResponse) throws Exception {
+	
+	        Class<T> entityClass = (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+	
+			//兼容如果只是为了返回String[当然其实可以直接用StringCallback也行]
+	        if (entityClass == String.class) {
+	            return (T) baseResponse.getResponseBodyToString();
+	        }
+	
+			//这里应该自定义你的Bean.可能不同的后台数据结构不同.
+	        final ErrorDataMes dataErrorMes = parseResponseHandler(baseResponse);
+	        // TODO: 2016/4/10 应该根据自己服务器的错误定义来进行回调到onEror/onSuccess.
+	        if (null != dataErrorMes) {
+	            if (dataErrorMes.getErr() != 0 && !dataErrorMes.getMsg().equals("success")) {
+	                throw new DreamLinerException(dataErrorMes.getErr(), dataErrorMes.getMsg());
+	            }
+	        } else {
+	            throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, "解释数据错误");
+	        }
+	
+			//如果解释有问题的话.如服务器类型定义有问题.Object成了String之类的话.会抛出异常.这个时候刚好就可以用上了自定义异常的提示语的逻辑
+	        T bean = null;
+	        try {
+	            bean = GsonUtil.getGson().fromJson(baseResponse.getResponseBodyToString(), entityClass);
+	        } catch (Exception ex) {
+	            throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, mErrMes);
+	        }
+	        return bean;
+	    }
+	
+	
+	    public ErrorDataMes parseResponseHandler(BaseResponse basicResponse) {
+	        try {
+	            return (ErrorDataMes) GsonUtil.fromJsonToObj(basicResponse.getResponseBodyToString(), ErrorDataMes.class);
+	        } catch (Exception dataErrorMes) {
+	            return null;
+	        }
+	    }
+	}
+
+
 
 #### 优点分析 ####
 - 在BaseAct/BaseFra中生成一个UUID作为请求的tag.方便在关闭Act的时候随时终止所有请求.
@@ -188,18 +227,10 @@
 
 # 使用到的开源项目说明
 
-1.  ButterKnife  
-Link: [https://github.com/JakeWharton/butterknife](https://github.com/JakeWharton/butterknife)
-
-1. okhttp  
-Link:[https://github.com/square/okhttp](https://github.com/square/okhttp)
-
-2. okhttp-utils  
-Link:[https://github.com/hongyangAndroid/okhttp-utils](https://github.com/hongyangAndroid/okhttp-utils) 
-
-
-1. Gson  
-Link:[https://github.com/google/gson](https://github.com/google/gson)
+>1.[butterknife](https://github.com/JakeWharton/butterknife)  
+>2.[okhttp](https://github.com/square/okhttp)  
+>3.[okhttp-utils](https://github.com/hongyangAndroid/okhttp-utils)  
+>4.[gson](https://github.com/google/gson)  
 
 # 关于我 #
 

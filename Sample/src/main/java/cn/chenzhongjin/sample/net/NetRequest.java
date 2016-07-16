@@ -1,7 +1,5 @@
 /*
- *
- * Copyright (c) 2015 [admin@chenzhongjin | chenzhongjin@vip.qq.com]
- *
+ * Copyright (c) 2016  DreamLiner Studio
  * Licensed under the Apache License, Version 2.0 (the "License”);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,7 +11,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package cn.chenzhongjin.sample.net;
@@ -29,7 +26,6 @@ import android.text.TextUtils;
 
 import com.dreamliner.simplifyokhttp.OkHttpUtils;
 import com.dreamliner.simplifyokhttp.callback.DataCallBack;
-import com.dreamliner.simplifyokhttp.callback.GenericsCallback;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
 
@@ -293,6 +289,5 @@ public class NetRequest {
             OkHttpUtils.getInstance().postError(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);
         }
     }
-
 }
 

@@ -1,7 +1,5 @@
 /*
- *
- * Copyright (c) 2015 [admin@chenzhongjin | chenzhongjin@vip.qq.com]
- *
+ * Copyright (c) 2016  DreamLiner Studio
  * Licensed under the Apache License, Version 2.0 (the "License”);
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,7 +11,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package cn.chenzhongjin.sample.entity;
@@ -30,35 +27,8 @@ import java.io.Serializable;
  */
 public class Weather implements Serializable {
 
-    /**
-     * errNum : 0
-     * errMsg : success
-     * retData : {"city":"广州","pinyin":"guangzhou","citycode":"101280101","date":"15-11-02","time":"11:00","postCode":"510000",
-     * "longitude":113.265,"latitude":23.108,"altitude":"43","weather":"多云","temp":"24","l_tmp":"17","h_tmp":"24","WD":"无持续风向",
-     * "WS":"微风(<10m/h)","sunrise":"06:32","sunset":"17:48"}
-     */
-
     private int errNum;
     private String errMsg;
-    /**
-     * city : 广州
-     * pinyin : guangzhou
-     * citycode : 101280101
-     * date : 15-11-02
-     * time : 11:00
-     * postCode : 510000
-     * longitude : 113.265
-     * latitude : 23.108
-     * altitude : 43
-     * weather : 多云
-     * temp : 24
-     * l_tmp : 17
-     * h_tmp : 24
-     * WD : 无持续风向
-     * WS : 微风(<10m/h)
-     * sunrise : 06:32
-     * sunset : 17:48
-     */
 
     private RetDataEntity retData;
 

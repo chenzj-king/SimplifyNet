@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2016  DreamLiner Studio
+ * Licensed under the Apache License, Version 2.0 (the "License”);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.dreamliner.simplifyokhttp;
 
 import android.util.AndroidRuntimeException;
@@ -179,7 +194,7 @@ public class OkHttpUtils {
                 try {
                     BaseResponse baseResponse = new BaseResponse(response);
                     Object object = finalHttpCallBack.parseNetworkResponse(baseResponse);
-                    sendSuccessResultCallback(object, baseResponse, call, finalHttpCallBack);
+                    sendSuccessResultCallback(object, call, finalHttpCallBack);
                 } catch (Exception e) {
                     sendFailResultCallback(call, e, finalHttpCallBack);
                 }
@@ -190,7 +205,6 @@ public class OkHttpUtils {
 
     public void sendFailResultCallback(final Call call, final Exception exception, final HttpCallBack httpCallBack) {
         if (httpCallBack == null) return;
-
 
         mPlatform.execute(new Runnable() {
             @Override
@@ -208,25 +222,27 @@ public class OkHttpUtils {
                     } else {
                         httpCallBack.onError(ErrorCode.OTHER_IOEXCEPTION, "连接服务器失败，请重试！", call, exception);
                     }
-                } else if (exception instanceof DreamLinerException) {
-                    //这是上层parseNetworkResponse的时候.如果gson解释有问题.就会抛出这个异常.就可以走onError回调
-                    httpCallBack.onError(((DreamLinerException) exception).getErrorCode(),
-                            ((DreamLinerException) exception).getErrorMessage(), call, exception);
                 } else if (exception instanceof AndroidRuntimeException) {
+
                     //请求状态码非200的提示
-                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "连接服务器失败，返回的状态码不为200，请重试！", call, exception);
-                } else if (exception instanceof RuntimeException) {
-                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "parseNetworkResponse抛出异常，请重试！", call, exception);
+                    httpCallBack.onError(ErrorCode.RESPONSE_ERROR_CODE_EXCEPTION, "请求成功,但返回的状态码不为200，请重试！", call, exception);
+
+                } else if (exception instanceof DreamLinerException) {
+
+                    //判断到是服务器返回的异常
+                    DreamLinerException dreamLinerException = (DreamLinerException) exception;
+                    httpCallBack.onError(dreamLinerException.getErrorCode(), dreamLinerException.getErrorMessage(), call, exception);
+
                 } else {
-                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, "未知异常，请重试！", call, exception);
+                    //在parseNetworkResponse引发的异常/onResponse的时候操作不当引发的异常
+                    httpCallBack.onError(ErrorCode.RUNTIME_EXCEPTION, exception.getMessage(), call, exception);
                 }
                 httpCallBack.onAfter();
             }
         });
     }
 
-    public void sendSuccessResultCallback(final Object object, final BaseResponse baseResponse, final Call call,
-                                          final HttpCallBack httpCallBack) {
+    public void sendSuccessResultCallback(final Object object, final Call call, final HttpCallBack httpCallBack) {
         if (httpCallBack == null) return;
 
         mPlatform.execute(new Runnable() {
@@ -237,9 +253,7 @@ public class OkHttpUtils {
                     httpCallBack.onResponse(object);
                 } catch (Exception e) {
                     e.printStackTrace();
-                    //理论上以后都不会走这边.因为在上层parseNetworkResponse的时候.如果responseResult不是标准json.
-                    //则会抛出SqEx.然后会直接走sendOnError
-                    //这里也是为了防止在执行onResponse的时候操作不当导致crash
+                    //这里是为了防止在执行onResponse的时候操作不当导致crash
                     httpCallBack.onError(ErrorCode.EXCHANGE_DATA_ERROR, e.getMessage(), call, e);
                 } finally {
                     httpCallBack.onAfter();

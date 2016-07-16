@@ -1,12 +1,32 @@
-package com.dreamliner.simplifyokhttp.callback;
+/*
+ * Copyright (c) 2016  DreamLiner Studio
+ * Licensed under the Apache License, Version 2.0 (the "License”);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import com.dreamliner.simplifyokhttp.error.ErrorDataMes;
+package cn.chenzhongjin.sample.net;
+
+import android.support.annotation.NonNull;
+
+import com.dreamliner.simplifyokhttp.callback.BaseResponse;
+import com.dreamliner.simplifyokhttp.callback.DataCallBack;
+import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
 import com.dreamliner.simplifyokhttp.utils.GsonUtil;
 
 import java.lang.reflect.ParameterizedType;
 
+import cn.chenzhongjin.sample.entity.ErrorDataMes;
 import okhttp3.Call;
 
 /**
@@ -21,7 +41,7 @@ public abstract class GenericsCallback<T> extends HttpCallBack<T> {
     private String mErrMes;
     private DataCallBack<T> mDataCallBack;
 
-    public GenericsCallback(String errMes, DataCallBack<T> dataCallBack) {
+    public GenericsCallback(@NonNull String errMes, DataCallBack<T> dataCallBack) {
         mErrMes = errMes;
         mDataCallBack = dataCallBack;
     }
@@ -56,8 +76,10 @@ public abstract class GenericsCallback<T> extends HttpCallBack<T> {
             throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, "解释数据错误");
         }
 
-        T bean = GsonUtil.getGson().fromJson(baseResponse.getResponseBodyToString(), entityClass);
-        if (null == bean) {
+        T bean = null;
+        try {
+            bean = GsonUtil.getGson().fromJson(baseResponse.getResponseBodyToString(), entityClass);
+        } catch (Exception ex) {
             throw new DreamLinerException(ErrorCode.EXCHANGE_DATA_ERROR, mErrMes);
         }
         return bean;
@@ -68,10 +90,8 @@ public abstract class GenericsCallback<T> extends HttpCallBack<T> {
         try {
             return (ErrorDataMes) GsonUtil.fromJsonToObj(basicResponse.getResponseBodyToString(), ErrorDataMes.class);
         } catch (Exception dataErrorMes) {
-            //理论上不会走到这里.因为上一层pare的时候jsonStr都可以是正常的.
             return null;
         }
     }
-
 }
 

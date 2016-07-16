@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2016  DreamLiner Studio
+ * Licensed under the Apache License, Version 2.0 (the "License”);
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.dreamliner.simplifyokhttp.utils;
 
 /**
@@ -17,8 +32,8 @@ public class ErrorCode {
     public final static int SOCKET_EXCEPTION = -102; //断网/网络差/主动取消request引发的异常
     public final static int INTERRUPTED_IOEXCEPTION = -103;//超时异常
     public final static int OTHER_IOEXCEPTION = -104;//除了上述的其他IO异常
-    public final static int RUNTIME_EXCEPTION = -105;// 当okhttp ResponeCode!=200的时候引发的自定义RunTimeException
+    public final static int RESPONSE_ERROR_CODE_EXCEPTION = -105;//当okhttp ResponeCode!=200的时候引发的自定义
+    public final static int RUNTIME_EXCEPTION = -106;// 当okhttp ResponeCode!=200的时候引发的自定义RunTimeException
 
-    public final static int SERVER_CUSTOM_ERROR = -106;//解释服务器返回无效请求的状态码
     public final static int EXCHANGE_DATA_ERROR = -107;//Gson解释JsonString引发的异常
 }
