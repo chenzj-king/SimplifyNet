@@ -211,16 +211,16 @@ public class OkHttpUtils {
             public void run() {
 
                 if (exception instanceof IOException) {
-                    if (exception instanceof SocketException) {
-                        if (call.isCanceled()) {
-                            Log.i("simplifyokhttp", "user finish Act/Fra cancel the request");
-                        } else {
-                            httpCallBack.onError(ErrorCode.SOCKET_EXCEPTION, "连接服务器失败，请重试！", call, exception);
-                        }
-                    } else if (exception instanceof InterruptedIOException) {
-                        httpCallBack.onError(ErrorCode.INTERRUPTED_IOEXCEPTION, "请求失败，请重试！", call, exception);
+                    if (call.isCanceled()) {
+                        Log.i("simplifyokhttp", "user finish Act/Fra/Dialog cancel the request");
                     } else {
-                        httpCallBack.onError(ErrorCode.OTHER_IOEXCEPTION, "连接服务器失败，请重试！", call, exception);
+                        if (exception instanceof SocketException) {
+                            httpCallBack.onError(ErrorCode.SOCKET_EXCEPTION, "连接服务器失败，请重试！", call, exception);
+                        } else if (exception instanceof InterruptedIOException) {
+                            httpCallBack.onError(ErrorCode.INTERRUPTED_IOEXCEPTION, "请求失败，请重试！", call, exception);
+                        } else {
+                            httpCallBack.onError(ErrorCode.OTHER_IOEXCEPTION, "连接服务器失败，请重试！", call, exception);
+                        }
                     }
                 } else if (exception instanceof AndroidRuntimeException) {
 
