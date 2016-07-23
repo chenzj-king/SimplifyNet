@@ -32,6 +32,7 @@ android {
 
 dependencies {
     compile project(':simplifyokhttp')
+    //compile 'com.github.chenzj-king:SimplifyNet:1.2'
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile libraries.junit
     compile libraries.supportAppCompat

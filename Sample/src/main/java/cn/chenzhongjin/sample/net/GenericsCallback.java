@@ -18,7 +18,6 @@ package cn.chenzhongjin.sample.net;
 import android.support.annotation.NonNull;
 
 import com.dreamliner.simplifyokhttp.callback.BaseResponse;
-import com.dreamliner.simplifyokhttp.callback.DataCallBack;
 import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
@@ -27,7 +26,6 @@ import com.dreamliner.simplifyokhttp.utils.GsonUtil;
 import java.lang.reflect.ParameterizedType;
 
 import cn.chenzhongjin.sample.entity.ErrorDataMes;
-import okhttp3.Call;
 
 /**
  * @author chenzj
@@ -39,21 +37,16 @@ import okhttp3.Call;
 public abstract class GenericsCallback<T> extends HttpCallBack<T> {
 
     private String mErrMes;
-    private DataCallBack<T> mDataCallBack;
 
-    public GenericsCallback(@NonNull String errMes, DataCallBack<T> dataCallBack) {
+    public GenericsCallback() {
+    }
+
+    public GenericsCallback(@NonNull String errMes) {
         mErrMes = errMes;
-        mDataCallBack = dataCallBack;
     }
 
-    @Override
-    public void onError(int errorCode, String errorMes, Call call, Exception e) {
-        mDataCallBack.onError(errorCode, errorMes);
-    }
-
-    @Override
-    public void onResponse(T response) {
-        mDataCallBack.onSuccess(response);
+    public void setErrMes(String errMes) {
+        mErrMes = errMes;
     }
 
     @Override

@@ -12,7 +12,7 @@
 
 	dependencies {
 		//...
-    	compile 'com.github.chenzj-king:SimplifyNet:1.0'
+    	compile 'com.github.chenzj-king:SimplifyNet:1.2'
 	}
 
 ## 源码分析 ##

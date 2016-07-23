@@ -20,7 +20,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
 
-import com.dreamliner.simplifyokhttp.callback.DataCallBack;
 import com.orhanobut.logger.Logger;
 
 import java.util.HashMap;
@@ -29,8 +28,10 @@ import java.util.UUID;
 
 import cn.chenzhongjin.sample.R;
 import cn.chenzhongjin.sample.entity.Weather;
+import cn.chenzhongjin.sample.net.GenericsCallback;
 import cn.chenzhongjin.sample.net.NetRequest;
 import cn.chenzhongjin.sample.ui.activity.view.IWeatherView;
+import okhttp3.Call;
 
 /**
  * @author chenzj
@@ -65,16 +66,16 @@ public class WeatherPresenterCompl implements IWeatherPresenter {
             Map<String, String> map = new HashMap<>();
             map.put("cityname", cityName);
 
-            NetRequest.getWeatherMsg(map, mUUID, new DataCallBack<Weather>() {
+            NetRequest.getWeatherMsg(map, mUUID, new GenericsCallback<Weather>() {
                 @Override
-                public void onSuccess(Weather weather) {
-                    iWeatherView.onSearchWeatherResult(weather);
+                public void onError(int errorCode, String errorMes, Call call, Exception e) {
+                    Logger.t(TAG).i("errorCode=" + errorCode + "\t\t" + errorMes);
+                    iWeatherView.onSearchWeatherError(errorCode, errorMes);
                 }
 
                 @Override
-                public void onError(int errorCode, String errorMes) {
-                    Logger.t(TAG).i("errorCode=" + errorCode + "\t\t" + errorMes);
-                    iWeatherView.onSearchWeatherError(errorCode, errorMes);
+                public void onResponse(Weather response) {
+                    iWeatherView.onSearchWeatherResult(response);
                 }
             });
         } else {

@@ -25,7 +25,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
 import com.dreamliner.simplifyokhttp.OkHttpUtils;
-import com.dreamliner.simplifyokhttp.callback.DataCallBack;
+import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
 import com.dreamliner.simplifyokhttp.utils.ErrorCode;
 
@@ -226,7 +226,7 @@ public class NetRequest {
         }
     }
 
-    public static <T> boolean checkNetStatus(DataCallBack<T> callback) {
+    public static <T> boolean checkNetStatus(HttpCallBack<T> callback) {
         if (!NetUtils.isNetworkAvailable(AppContext.getInstance())) {
             OkHttpUtils.getInstance().postError(ErrorCode.NET_DISABLE, "请检查你的网络状态!", callback);
             return false;
@@ -234,7 +234,7 @@ public class NetRequest {
         return true;
     }
 
-    public static <T> Map<String, String> addCommonParams(Map<String, String> params, DataCallBack<T> callback) {
+    public static <T> Map<String, String> addCommonParams(Map<String, String> params, HttpCallBack<T> callback) {
 
         //添加常用的参数
 
@@ -257,7 +257,7 @@ public class NetRequest {
         return params;
     }
 
-    private static CheckBean checkNetAndAddParams(Map<String, String> specificParams, DataCallBack<Weather> callback) {
+    private static CheckBean checkNetAndAddParams(Map<String, String> specificParams, HttpCallBack<Weather> callback) {
 
         if (!checkNetStatus(callback)) {
             //这里进行网络状态判断.無网络直接回调onError.return该请求
@@ -270,7 +270,7 @@ public class NetRequest {
 
     }
 
-    public static void getWeatherMsg(Map<String, String> specificParams, Object object, final DataCallBack<Weather> callback) {
+    public static void getWeatherMsg(Map<String, String> specificParams, Object object, final GenericsCallback<Weather> callback) {
 
         CheckBean checkBean = checkNetAndAddParams(specificParams, callback);
         if (!checkBean.isAllow()) {
@@ -278,12 +278,12 @@ public class NetRequest {
         }
 
         try {
+            callback.setErrMes("解释天气数据失败");
             OkHttpUtils.get().url(HttpUrl.BASE_WEATHER_URL)
                     .addHeader("apikey", "15f0d14ed33720b6b73ec8a3f7bb4d46")
                     .params(checkBean.getParams())
                     .tag(object).build()
-                    .execute(new GenericsCallback<Weather>("解释天气数据失败", callback) {
-                    });
+                    .execute(callback);
         } catch (Exception e) {
             e.printStackTrace();
             OkHttpUtils.getInstance().postError(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);

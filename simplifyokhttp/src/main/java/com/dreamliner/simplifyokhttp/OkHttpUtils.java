@@ -27,7 +27,6 @@ import com.dreamliner.simplifyokhttp.builder.PostJsonBuilder;
 import com.dreamliner.simplifyokhttp.builder.PostJsonZipBuilder;
 import com.dreamliner.simplifyokhttp.builder.PostStringBuilder;
 import com.dreamliner.simplifyokhttp.callback.BaseResponse;
-import com.dreamliner.simplifyokhttp.callback.DataCallBack;
 import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
 import com.dreamliner.simplifyokhttp.request.RequestCall;
 import com.dreamliner.simplifyokhttp.utils.DreamLinerException;
@@ -94,25 +93,30 @@ public class OkHttpUtils {
         return mOkHttpClient;
     }
 
-    public <T> void postError(int errorCode, String errorMes, DataCallBack<T> callBack) {
-        mPlatform.execute(new ResponseDeliveryRunnable<T>(errorCode, errorMes, callBack));
+    public <T> void postError(int errorCode, String errorMes, HttpCallBack<T> callBack) {
+        mPlatform.execute(new ResponseDeliveryRunnable<T>(errorCode, errorMes, callBack, null, null));
     }
 
     private class ResponseDeliveryRunnable<T> implements Runnable {
 
         private int erroCode;
         private String errorMessage;
-        private DataCallBack<T> callback;
+        private HttpCallBack<T> callback;
+        private Call call;
+        private Exception e;
 
-        public ResponseDeliveryRunnable(int erroCode, String errorMessage, DataCallBack<T> callback) {
+
+        public ResponseDeliveryRunnable(int erroCode, String errorMessage, HttpCallBack<T> callback, Call call, Exception e) {
             this.erroCode = erroCode;
             this.errorMessage = errorMessage;
             this.callback = callback;
+            this.call = call;
+            this.e = e;
         }
 
         @Override
         public void run() {
-            callback.onError(erroCode, errorMessage);
+            callback.onError(erroCode, errorMessage, call, e);
         }
     }
 
@@ -197,6 +201,8 @@ public class OkHttpUtils {
                     sendSuccessResultCallback(object, call, finalHttpCallBack);
                 } catch (Exception e) {
                     sendFailResultCallback(call, e, finalHttpCallBack);
+                } finally {
+                    response.close();
                 }
 
             }
