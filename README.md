@@ -19,42 +19,24 @@
 
 #### 请求开始 ####
 
-	Map<String, String> map = new HashMap<>();
-    map.put("cityname", cityName);
-
-    NetRequest.getWeatherMsg(map, mUUID, new DataCallBack<Weather>() {
+    NetRequest.getWeatherMsg(map, mUUID, new GenericsCallback<Weather>() {
         @Override
-        public void onSuccess(Weather weather) {
-			//处理成功回调
+        public void onError(int errorCode, String errorMes, Call call, Exception e) {
+			//失败的处理
         }
 
         @Override
-        public void onError(int errorCode, String errorMes) {
-			//处理失败回调
+        public void onResponse(Weather response) {
+			//成功的处理
         }
     });
 
 #### 封装在请求类的处理 ####
 
-	//CheckBean是专门保存网络状态是否正常&添加常用参数是否正常和参数列表的一個实体
-	CheckBean checkBean = checkNetAndAddParams(specificParams, callback);
-    if (!checkBean.isAllow()) {
-		//checkNetAndAddParams的时候如果发现有问题直接已经DataCallback到onErro.然后这里拦截不再进行网络请求
-        return;
-    }
-
-    try {
-		//这里进行指定get请求.还有添加url.添加头部.添加参数.添加tag[方便后续Act/Fra关闭的时候执行cancel]
-        OkHttpUtils.get().url(HttpUrl.BASE_WEATHER_URL)
-                .addHeader("apikey", "自己去申请一個apikey")
-                .params(checkBean.getParams())
-                .tag(object).build()
-				//GenericsCallback是自定义泛型的callback.进行了解释错误的时候的封装&网络处理好之后处理上层的DataCallback
-                .execute(new GenericsCallback<Weather>("解释天气数据失败", callback) {
-                });
-    } catch (Exception e) {
-        e.printStackTrace();
-        OkHttpUtils.getInstance().postError(ErrorCode.ERROR_PARMS, "请求参数本地异常", callback);
+    public static void getWeatherMsg(Map<String, String> specificParams, Object object, final GenericsCallback<Weather> callback) {
+        callback.setErrMes("解释天气数据失败");
+		//getAddParams是封装过的方法.里面会进行网络判断&添加参数&build RequestCall来进行请求
+        getAddParams(HttpUrl.BASE_WEATHER_URL, specificParams, object, callback);
     }
 
 #### 底册okhttpUtils封装的回调处理 ####
@@ -75,7 +57,7 @@
             public void onResponse(final Call call, final Response response) {
                 if (response.code() >= 400 && response.code() <= 599) {
                     try {
-						//状态码不为200也判断为失败来执行
+						////状态码不为200也判断为失败来执行
                         sendFailResultCallback(call, new AndroidRuntimeException(response.body().string()), finalHttpCallBack);
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -92,6 +74,9 @@
                     sendSuccessResultCallback(object, call, finalHttpCallBack);
                 } catch (Exception e) {
                     sendFailResultCallback(call, e, finalHttpCallBack);
+                } finally {
+					//及时回收.不然可能造成泄漏
+                    response.close();
                 }
 
             }
@@ -108,16 +93,16 @@
             public void run() {
 
                 if (exception instanceof IOException) {
-                    if (exception instanceof SocketException) {
-                        if (call.isCanceled()) {
-                            Log.i("simplifyokhttp", "user finish Act/Fra cancel the request");
-                        } else {
-                            httpCallBack.onError(ErrorCode.SOCKET_EXCEPTION, "连接服务器失败，请重试！", call, exception);
-                        }
-                    } else if (exception instanceof InterruptedIOException) {
-                        httpCallBack.onError(ErrorCode.INTERRUPTED_IOEXCEPTION, "请求失败，请重试！", call, exception);
+                    if (call.isCanceled()) {
+                        Log.i("simplifyokhttp", "user finish Act/Fra/Dialog cancel the request");
                     } else {
-                        httpCallBack.onError(ErrorCode.OTHER_IOEXCEPTION, "连接服务器失败，请重试！", call, exception);
+                        if (exception instanceof SocketException) {
+                            httpCallBack.onError(ErrorCode.SOCKET_EXCEPTION, "连接服务器失败，请重试！", call, exception);
+                        } else if (exception instanceof InterruptedIOException) {
+                            httpCallBack.onError(ErrorCode.INTERRUPTED_IOEXCEPTION, "请求失败，请重试！", call, exception);
+                        } else {
+                            httpCallBack.onError(ErrorCode.OTHER_IOEXCEPTION, "连接服务器失败，请重试！", call, exception);
+                        }
                     }
                 } else if (exception instanceof AndroidRuntimeException) {
 

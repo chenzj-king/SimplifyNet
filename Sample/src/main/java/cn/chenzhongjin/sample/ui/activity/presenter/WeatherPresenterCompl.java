@@ -82,6 +82,7 @@ public class WeatherPresenterCompl implements IWeatherPresenter {
             iWeatherView.onInputError(context.getString(R.string.input_error_tips));
         }
     }
+
 }
 
 
