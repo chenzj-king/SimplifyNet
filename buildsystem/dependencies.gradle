@@ -26,8 +26,8 @@ ext.libraries = [
 
         //黄油刀.依赖注入view
         apt                : "com.neenbedankt.gradle.plugins:android-apt:1.8",
-        butterknife        : "com.jakewharton:butterknife:8.2.1",
-        butterknifeApt     : "com.jakewharton:butterknife-compiler:8.2.1",
+        butterknife        : "com.jakewharton:butterknife:8.4.0",
+        butterknifeApt     : "com.jakewharton:butterknife-compiler:8.4.0",
 
         //cool log
         logger             : "com.orhanobut:logger:1.15",
@@ -37,7 +37,7 @@ ext.libraries = [
         okhttpUrlconnection: "com.squareup.okhttp3:okhttp-urlconnection:3.4.1",
         okhttpWs           : "com.squareup.okhttp3:okhttp-ws:3.4.1",
 
-        okio               : "com.squareup.okio:okio:1.9.0",
+        okio               : "com.squareup.okio:okio:1.10.0",
         gson               : "com.google.code.gson:gson:2.7",
 
         //事件总线&数据库框架.greenrobot系列
