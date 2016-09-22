@@ -9,7 +9,7 @@ ext.versions = [
 
         // Library versions
         junit      : '4.12',
-        supportLibs: '24.2.0',
+        supportLibs: '24.2.1',
         multidex   : '1.0.1',
 ]
 ext.libraries = [

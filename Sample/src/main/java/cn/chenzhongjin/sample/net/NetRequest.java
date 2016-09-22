@@ -44,24 +44,24 @@ public class NetRequest {
 
     private static final String TAG = "NetRequest";
 
-    public static String getString(@StringRes int resId) {
+    private static String getString(@StringRes int resId) {
         return AppContext.getInstance().getString(resId);
     }
 
-    public static Map<String, String> getGzipGetHeaders() {
+    private static Map<String, String> getGzipGetHeaders() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Encoding", "gzip");
         headers.put("Accept-Encoding", "gzip,deflate");
         return headers;
     }
 
-    public static Map<String, String> getGzipPostHeaders() {
+    private static Map<String, String> getGzipPostHeaders() {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Encoding", "gzip");
         return headers;
     }
 
-    public static <T> boolean checkNetStatus(HttpCallBack<T> callback) {
+    private static boolean checkNetStatus(HttpCallBack callback) {
         if (!NetUtils.isNetworkAvailable(AppContext.getInstance())) {
             OkHttpUtils.getInstance().postError(ErrorCode.NET_DISABLE, "请检查你的网络状态!", callback);
             return false;
@@ -69,7 +69,7 @@ public class NetRequest {
         return true;
     }
 
-    public static <T> Map<String, String> addCommonParams(Map<String, String> params, HttpCallBack<T> callback) {
+    private static Map<String, String> addCommonParams(Map<String, String> params, HttpCallBack callback) {
 
         //这里进行必要参数的校验.例如token之类的不能为空
         boolean testError = false;
@@ -101,7 +101,7 @@ public class NetRequest {
         return new CheckBean(null != specificParams, specificParams);
     }
 
-    public static void get(String url, Map<String, String> params, Object object, GenericsCallback callback) {
+    private static void get(String url, Map<String, String> params, Object object, GenericsCallback callback) {
         if (!checkNetStatus(callback)) {
             return;
         }
@@ -113,7 +113,7 @@ public class NetRequest {
         }
     }
 
-    public static void getAddParams(String url, Map<String, String> specificParams, Object tag, GenericsCallback<Weather> callback) {
+    private static void getAddParams(String url, Map<String, String> specificParams, Object tag, GenericsCallback callback) {
         CheckBean checkBean = checkNetAndAddParams(specificParams, callback);
         if (!checkBean.isAllow()) {
             return;
@@ -130,7 +130,7 @@ public class NetRequest {
         }
     }
 
-    public static void post(String url, Map<String, String> params, Object object, GenericsCallback callback) {
+    private static void post(String url, Map<String, String> params, Object object, GenericsCallback callback) {
         if (!checkNetStatus(callback)) {
             return;
         }
@@ -143,7 +143,7 @@ public class NetRequest {
         }
     }
 
-    public static void postParm(String url, Map<String, String> params, Object object, GenericsCallback callback) {
+    private static void postParm(String url, Map<String, String> params, Object object, GenericsCallback callback) {
         CheckBean checkBean = checkNetAndAddParams(params, callback);
         if (!checkBean.isAllow()) {
             return;
@@ -156,7 +156,7 @@ public class NetRequest {
         }
     }
 
-    public static void postParmAndFile(String url, Map<String, String> params, File file, Object object, GenericsCallback callback) {
+    private static void postParmAndFile(String url, Map<String, String> params, File file, Object object, GenericsCallback callback) {
         CheckBean checkBean = checkNetAndAddParams(params, callback);
         if (!checkBean.isAllow()) {
             return;
@@ -171,7 +171,7 @@ public class NetRequest {
         }
     }
 
-    public static void postFiles(String url, List<File> files, List<String> textInputs, Object tag, GenericsCallback callback) {
+    private static void postFiles(String url, List<File> files, List<String> textInputs, Object tag, GenericsCallback callback) {
         if (!checkNetStatus(callback)) {
             return;
         }
@@ -196,7 +196,7 @@ public class NetRequest {
         }
     }
 
-    public static void postJson(String url, String jsonStr, Object object, GenericsCallback callback) {
+    private static void postJson(String url, String jsonStr, Object object, GenericsCallback callback) {
         if (!checkNetStatus(callback)) {
             return;
         }
@@ -208,7 +208,7 @@ public class NetRequest {
         }
     }
 
-    public static RequestCall getHeadJsonZip(String url, String jsonStr, Object tag, GenericsCallback callback) {
+    private static RequestCall getHeadJsonZip(String url, String jsonStr, Object tag, GenericsCallback callback) {
         if (!checkNetStatus(callback)) {
             return null;
         }
@@ -224,7 +224,7 @@ public class NetRequest {
         }
     }
 
-    public static RequestCall postHeadJsonZip(String url, String jsonStr, Object tag, GenericsCallback callback) {
+    private static RequestCall postHeadJsonZip(String url, String jsonStr, Object tag, GenericsCallback callback) {
         if (!checkNetStatus(callback)) {
             return null;
         }
