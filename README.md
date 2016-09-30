@@ -1,3 +1,5 @@
+[![](https://jitpack.io/v/chenzj-king/SimplifyNet.svg)](https://jitpack.io/#chenzj-king/SimplifyNet)
+
 # SimplifyNet
 基于Okhttp+Gson的一个简单封装的网络访问框架.在各个层次都有明确的异常抛出(更加方便添加头部.添加特殊请求参数.添加签名等逻辑).回调返回实体/错误信息.
 
@@ -12,7 +14,7 @@
 
 	dependencies {
 		//...
-    	compile 'com.github.chenzj-king:SimplifyNet:1.2.2'
+    	compile 'com.github.chenzj-king:SimplifyNet:1.2.4'
 	}
 
 ## 源码分析 ##
