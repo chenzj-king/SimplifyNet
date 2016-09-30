@@ -17,7 +17,6 @@ package com.dreamliner.simplifyokhttp.request;
 
 import com.dreamliner.simplifyokhttp.OkHttpUtils;
 import com.dreamliner.simplifyokhttp.builder.PostFormBuilder.FileInput;
-import com.dreamliner.simplifyokhttp.builder.PostFormBuilder.TextInput;
 import com.dreamliner.simplifyokhttp.callback.HttpCallBack;
 
 import java.net.FileNameMap;
@@ -42,18 +41,16 @@ import okhttp3.RequestBody;
 public class PostFormRequest extends OkHttpRequest {
 
     private List<FileInput> files;
-    private List<TextInput> texts;
 
-    public PostFormRequest(String url, Object tag, Map<String, String> params, Map<String, String> headers, List<FileInput> files,
-                           List<TextInput> texts, int id) {
+    public PostFormRequest(String url, Object tag, Map<String, String> params, Map<String, String> headers,
+                           List<FileInput> files, int id) {
         super(url, tag, params, headers, id);
         this.files = files;
-        this.texts = texts;
     }
 
     @Override
     protected RequestBody buildRequestBody() {
-        if ((files == null || files.isEmpty()) && (texts == null || texts.isEmpty())) {
+        if ((files == null || files.isEmpty())) {
             FormBody.Builder builder = new FormBody.Builder();
             addParams(builder);
             return builder.build();
@@ -65,10 +62,6 @@ public class PostFormRequest extends OkHttpRequest {
                 FileInput fileInput = files.get(i);
                 RequestBody fileBody = RequestBody.create(MediaType.parse(guessMimeType(fileInput.filename)), fileInput.file);
                 builder.addFormDataPart(fileInput.key, fileInput.filename, fileBody);
-            }
-            for (int i = 0; i < texts.size(); i++) {
-                TextInput textInput = texts.get(i);
-                builder.addFormDataPart(textInput.key, textInput.text);
             }
             return builder.build();
         }

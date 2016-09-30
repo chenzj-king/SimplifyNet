@@ -171,22 +171,18 @@ public class NetRequest {
         }
     }
 
-    private static void postFiles(String url, List<File> files, List<String> textInputs, Object tag, GenericsCallback callback) {
+    private static void postParmAndFiles(String url, List<File> files, Map<String, String> params, Object tag,
+                                         GenericsCallback callback) {
         if (!checkNetStatus(callback)) {
             return;
         }
         try {
             PostFormBuilder postFormBuilder = OkHttpUtils.post().url(url);
+            postFormBuilder.params(params);
             if (null != files) {
                 for (int i = 0; i < files.size(); i++) {
                     //根据业务逻辑定义key
                     postFormBuilder.addFile("file" + i, files.get(i).getName(), files.get(i));
-                }
-            }
-            if (null != textInputs) {
-                for (int i = 0; i < textInputs.size(); i++) {
-                    //根据业务逻辑定义key
-                    postFormBuilder.addText("text" + i, textInputs.get(i));
                 }
             }
             postFormBuilder.build().execute(callback);

@@ -34,20 +34,14 @@ import java.util.Map;
 public class PostFormBuilder extends OkHttpRequestBuilder<PostFormBuilder> implements HasParamsable {
 
     private List<FileInput> files = new ArrayList<>();
-    private List<TextInput> texts = new ArrayList<>();
 
     @Override
     public RequestCall build() {
-        return new PostFormRequest(url, tag, params, headers, files, texts, id).build();
+        return new PostFormRequest(url, tag, params, headers, files, id).build();
     }
 
     public PostFormBuilder addFile(String name, String filename, File file) {
         files.add(new FileInput(name, filename, file));
-        return this;
-    }
-
-    public PostFormBuilder addText(String key, String val) {
-        texts.add(new TextInput(key, val));
         return this;
     }
 
@@ -68,24 +62,6 @@ public class PostFormBuilder extends OkHttpRequestBuilder<PostFormBuilder> imple
                     "key='" + key + '\'' +
                     ", filename='" + filename + '\'' +
                     ", file=" + file +
-                    '}';
-        }
-    }
-
-    public static class TextInput {
-        public String key;
-        public String text;
-
-        public TextInput(String key, String text) {
-            this.key = key;
-            this.text = text;
-        }
-
-        @Override
-        public String toString() {
-            return "TextInput{" +
-                    "key='" + key + '\'' +
-                    ", text='" + text + '\'' +
                     '}';
         }
     }
