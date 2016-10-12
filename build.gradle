@@ -8,8 +8,8 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+        classpath 'com.android.tools.build:gradle:2.2.1'
+        classpath 'com.novoda:bintray-release:0.3.4'
         classpath libraries.apt
     }
 }
