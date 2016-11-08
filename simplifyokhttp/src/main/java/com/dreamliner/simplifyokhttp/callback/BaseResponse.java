@@ -83,23 +83,23 @@ public class BaseResponse {
         return bodyString;
     }
 
-    public Reader getResponseBodyToReader() throws IOException {
+    public Reader getRbToReader() throws IOException {
         return this.mResponse.body().charStream();
     }
 
-    public <T> T getResponseBodyStringToObject(Class<T> classOfT) throws IOException {
+    public <T> T getRbStringToObject(Class<T> classOfT) throws IOException {
         return GsonUtil.fromJson(bodyString, classOfT);
     }
 
-    public Object getResponseBodyStringToObject(Type type) throws IOException {
+    public <T> T getRbStringToObject(Type type) throws IOException {
         if (TextUtils.isEmpty(bodyString))
             getResponseBodyToString();
-        return GsonUtil.fromJsonToObj(bodyString, type);
+        return GsonUtil.fromJson(bodyString, type);
     }
 
-    public <T> Object getResponseBodyReaderToObject(Type type) throws IOException {
+    public <T> T getRbReaderToObject(Type type) throws IOException {
         Reader reader = this.mResponse.body().charStream();
-        return GsonUtil.fromJsonToObj(reader, type);
+        return GsonUtil.fromJson(reader, type);
     }
 
     public void filterResponse() {

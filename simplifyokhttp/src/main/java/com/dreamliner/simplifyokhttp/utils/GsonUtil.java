@@ -35,20 +35,18 @@ public class GsonUtil {
         return gson;
     }
 
-    public static Object fromJsonToObj(String jsonStr, Type type) {
-        Object object = null;
+    public static <T> T fromJson(Reader reader, Type type) {
         try {
-            return gson.fromJson(jsonStr, type);
+            return gson.fromJson(reader, type);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
         return null;
     }
 
-    public static Object fromJsonToObj(Reader reader, Type type) {
-        Object object = null;
+    public static <T> T fromJson(String jsonStr, Type type) {
         try {
-            return gson.fromJson(reader, type);
+            return gson.fromJson(jsonStr, type);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

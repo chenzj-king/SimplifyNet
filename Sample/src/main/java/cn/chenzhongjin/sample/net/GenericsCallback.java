@@ -81,7 +81,7 @@ public abstract class GenericsCallback<T> extends HttpCallBack<T> {
 
     public ErrorDataMes parseResponseHandler(BaseResponse basicResponse) {
         try {
-            return (ErrorDataMes) GsonUtil.fromJsonToObj(basicResponse.getResponseBodyToString(), ErrorDataMes.class);
+            return GsonUtil.fromJson(basicResponse.getResponseBodyToString(), ErrorDataMes.class);
         } catch (Exception dataErrorMes) {
             return null;
         }
