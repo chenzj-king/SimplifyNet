@@ -1,20 +1,15 @@
-[![](https://jitpack.io/v/chenzj-king/SimplifyNet.svg)](https://jitpack.io/#chenzj-king/SimplifyNet)
+[![](https://img.shields.io/badge/maven--central-1.0.0-green.svg)](https://bintray.com/chenzj-king/maven/SimplifyNet)
 
 # SimplifyNet
 基于Okhttp+Gson的一个简单封装的网络访问框架.在各个层次都有明确的异常抛出(更加方便添加头部.添加特殊请求参数.添加签名等逻辑).回调返回实体/错误信息.
 
 ## JitPack.io
 
-我把项目放到了[jitpack.io](https://jitpack.io).如果要使用请按照如下对项目进行配置.
-
-    repositories {
-    	//...
-    	maven { url "https://jitpack.io" }
-	}
+我把项目放到了[jcenter](https://bintray.com/).如果要使用请按照如下对项目进行配置.
 
 	dependencies {
 		//...
-    	compile 'com.github.chenzj-king:SimplifyNet:1.2.4'
+    	compile 'com.dreamliner:SimplifyNet:1.0.0'
 	}
 
 ## 源码分析 ##
